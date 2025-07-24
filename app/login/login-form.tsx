@@ -54,7 +54,6 @@ export default function LoginForm() {
       }
     } catch (err) {
       alert("네트워크 오류: 로그인 실패");
-      console.log(err);
     }
   };
 

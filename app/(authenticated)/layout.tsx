@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuthStore } from "../store/useAuthStore";
-import { FaHome, FaSearch, FaComments, FaBell, FaUser } from 'react-icons/fa';
+import { FaHome, FaSearch, FaComments, FaBell, FaUser, FaEdit } from 'react-icons/fa';
 import { MdImage } from 'react-icons/md';
 import { useState, useEffect } from "react";
 
@@ -126,7 +126,7 @@ export default function AuthenticatedLayout({
             <FaBell size={20} />
             {!isCollapsed && <span>Notifications</span>}
           </Link>
-          <Link href="/image-upload-test" style={{ 
+          <Link href="/post" style={{ 
             fontWeight: 700, 
             fontSize: 16, 
             color: "#222", 
@@ -139,8 +139,8 @@ export default function AuthenticatedLayout({
             transition: "background 0.2s",
             justifyContent: isCollapsed ? "center" : "flex-start"
           }} onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f5"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-            <MdImage size={20} />
-            {!isCollapsed && <span>Image</span>}
+            <FaEdit size={20} />
+            {!isCollapsed && <span>Post</span>}
           </Link>
           <Link href="/members/me" style={{ 
             fontWeight: 700, 

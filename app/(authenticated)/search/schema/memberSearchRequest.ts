@@ -1,3 +1,3 @@
-export interface MemberSearchRequest {
-  username: string;
-} 
+import { components } from "@/schema";
+
+export type MemberSearchRequest = components["schemas"]["MemberSearchRequest"];

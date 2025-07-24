@@ -76,7 +76,6 @@ export default function ChatRoomPage() {
       // 채팅방 구독 경로 (백엔드에서 convertAndSend("/topic/chat-room/{chatRoomId}") 사용 중)
       client.subscribe(`/topic/chat-room/${chatRoomId}`, (message) => {
         const receivedMessage: ChatMessage = JSON.parse(message.body);
-        console.log('수신한 메시지:', receivedMessage); // 메시지 수신 로그
         setMessages((prevMessages) => {
           if (prevMessages.some(msg => msg.chat_id === receivedMessage.chat_id)) {
             return prevMessages;
@@ -92,16 +91,13 @@ export default function ChatRoomPage() {
 
     return () => {
       if (client && client.connected) {
-        client.disconnect(() => {
-          console.log('Disconnected from WebSocket');
-        });
+        client.disconnect();
       }
     };
   }, [memberId, chatRoomId]);
 
   // 메시지 전송
   const sendMessage = () => {
-    console.log('store 상태:', { memberId, realName, username, _hasHydrated });
     if (
       !stompClient ||
       !messageInput.trim() ||

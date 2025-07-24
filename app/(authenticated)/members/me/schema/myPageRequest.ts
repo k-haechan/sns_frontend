@@ -1,3 +1,3 @@
-export interface MyPageRequest {
-  member_id: string | number;
-} 
+import { components } from "@/schema";
+
+export type MyPageRequest = components["schemas"]["MemberDetailResponse"];
