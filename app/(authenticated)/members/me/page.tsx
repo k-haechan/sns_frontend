@@ -1,0 +1,109 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { MyPageRequest } from './schema/myPageRequest';
+
+// snake_case -> camelCase 변환 함수
+function toCamel(obj: any): any {
+  if (Array.isArray(obj)) return obj.map(toCamel);
+  if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [
+        k.replace(/_([a-z])/g, (_, c) => c.toUpperCase()),
+        toCamel(v)
+      ])
+    );
+  }
+  return obj;
+}
+
+export default function MyPage() {
+  const memberId = useAuthStore(state => state.memberId);
+  const [member, setMember] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!memberId) return;
+    setLoading(true);
+    // 내 정보 요청 시
+    const req: MyPageRequest = { member_id: memberId };
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${req.member_id}`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(data => setMember(toCamel(data.data)))
+      .finally(() => setLoading(false));
+    // 내 게시물 목록 요청
+    setPostsLoading(true);
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${memberId}/posts?page=0&size=5`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(data => setPosts(data.data?.content ? toCamel(data.data.content) : []))
+      .finally(() => setPostsLoading(false));
+  }, [memberId]);
+
+  if (!memberId) return <div style={{ padding: 40, textAlign: 'center' }}>로그인이 필요합니다.</div>;
+  if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>로딩 중...</div>;
+  if (!member) return <div style={{ padding: 40, textAlign: 'center' }}>내 정보를 불러올 수 없습니다.</div>;
+
+  return (
+    <div style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 32 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
+        <img
+          src={member.profileImageUrl || '/window.svg'}
+          alt="프로필"
+          style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', background: '#f3f3f3', border: '1px solid #eee' }}
+        />
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 24, color: '#222' }}>
+            {member.username}
+            {member.realName && <span style={{ color: '#888', fontWeight: 400, fontSize: 18 }}> ({member.realName})</span>}
+          </div>
+          <div style={{ color: '#888', marginTop: 4 }}>{member.introduction || '자기소개가 없습니다.'}</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 32, justifyContent: 'center', marginTop: 16 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.follower_count}</div>
+          <div style={{ color: '#888', fontSize: 14 }}>팔로워</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.following_count}</div>
+          <div style={{ color: '#888', fontSize: 14 }}>팔로잉</div>
+        </div>
+      </div>
+      {/* 내 게시물 썸네일 리스트 */}
+      <div style={{ marginTop: 36 }}>
+        <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 12 }}>내 게시물</div>
+        {postsLoading ? (
+          <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>게시물 불러오는 중...</div>
+        ) : posts.length === 0 ? (
+          <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>게시물이 없습니다.</div>
+        ) : (
+          <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
+            {posts.map((post, idx) => (
+              <div key={post.post_id} style={{ minWidth: 80, maxWidth: 100, textAlign: 'center' }}>
+                <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', background: '#f3f3f3', margin: '0 auto 6px auto', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {post.images && post.images.length > 0 ? (
+                    <img
+                      src={post.images[0].url.startsWith('http') ? post.images[0].url : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${post.images[0].url}`}
+                      alt={post.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{ color: '#bbb', fontSize: 32 }}>🖼️</span>
+                  )}
+                </div>
+                <div style={{ fontSize: 13, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+} 
