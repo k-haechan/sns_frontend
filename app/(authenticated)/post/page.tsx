@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { components } from "@/schema";
+import { useRouter } from "next/navigation";
 
 async function uploadImage(file: File, presignedUrl: string) {
   const response = await fetch(presignedUrl, {
@@ -43,6 +44,7 @@ async function convertToWebp(file: File): Promise<Blob> {
 }
 
 export default function ImageUploadTestPage() {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -133,6 +135,7 @@ export default function ImageUploadTestPage() {
         setUploading(false);
         return;
       }
+      const postId = createData.data.post_id; // <-- Add this line
       const presignedUrls = createData.data.images?.map((img: components["schemas"]["ImageResponse"]) => img.url);
       if (!presignedUrls || presignedUrls.length !== files.length) {
         setError('presignedUrl 개수 불일치 또는 응답 오류');
@@ -157,6 +160,9 @@ export default function ImageUploadTestPage() {
       setContent('');
       setFiles([]);
       setFileInputKey(k => k + 1);
+
+      // Redirect to post detail page
+      router.push(`/post/${postId}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message || '오류 발생');

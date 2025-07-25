@@ -1,17 +1,17 @@
 import type { NextConfig } from "next";
 import { URL } from "url";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-const parsedUrl = new URL(apiBaseUrl);
+const storageBaseUrl = process.env.NEXT_PUBLIC_STORAGE_BASE_URL || "";
+const parsedStorageUrl = new URL(storageBaseUrl);
 
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: parsedUrl.protocol.replace(":", "") as "http" | "https",
-        hostname: parsedUrl.hostname,
-        port: parsedUrl.port,
-        pathname: `${parsedUrl.pathname}**`,
+        protocol: parsedStorageUrl.protocol.replace(":", "") as "http" | "https",
+        hostname: parsedStorageUrl.hostname,
+        port: parsedStorageUrl.port || undefined,
+        pathname: "/**",
       },
     ],
   },

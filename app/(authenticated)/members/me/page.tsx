@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
 import { useAuthStore } from '../../../store/useAuthStore';
 import { MyPageRequest } from './schema/myPageRequest';
 import { components } from "@/schema";
@@ -9,6 +10,7 @@ import Image from "next/image";
 type PostResponse = components["schemas"]["PostResponse"];
 
 export default function MyPage() {
+  const router = useRouter();
   const memberId = useAuthStore(state => state.memberId);
   const [member, setMember] = useState<MyPageRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +21,9 @@ export default function MyPage() {
     if (!memberId) return;
     setLoading(true);
     // 내 정보 요청 시
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${memberId}`, {
+    const memberApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${memberId}`;
+    console.log("Fetching member data from:", memberApiUrl); // <-- Add this line
+    fetch(memberApiUrl, {
       credentials: 'include',
     })
       .then(res => res.json())
@@ -77,11 +81,15 @@ export default function MyPage() {
         ) : (
           <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
             {posts.map((post) => (
-              <div key={post.post_id} style={{ minWidth: 80, maxWidth: 100, textAlign: 'center' }}>
+              <div
+                key={post.post_id}
+                style={{ minWidth: 80, maxWidth: 100, textAlign: 'center', cursor: 'pointer' }}
+                onClick={() => router.push(`/post/${post.post_id}`)}
+              >
                 <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', background: '#f3f3f3', margin: '0 auto 6px auto', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {post.images && post.images.length > 0 ? (
                     <Image
-                      src={post.images[0].url!.startsWith('http') ? post.images[0].url! : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${post.images[0].url}`}
+                      src={post.images[0].url!.startsWith('http') ? post.images[0].url! : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}/${post.images[0].url}`}
                       alt={post.title || '게시물 이미지'}
                       width={80}
                       height={80}
