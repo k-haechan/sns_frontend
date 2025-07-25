@@ -1,9 +1,7 @@
 "use client";
 
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { FaHome, FaSearch, FaComments, FaBell, FaUser } from 'react-icons/fa';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

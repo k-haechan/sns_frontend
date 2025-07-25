@@ -2,23 +2,12 @@
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import SockJS from 'sockjs-client';
-import { Stomp } from '@stomp/stompjs';
+import { Client } from '@stomp/stompjs';
 import { useAuthStore } from '../../../../store/useAuthStore';
+import { components } from "@/schema";
 
-interface ChatMessage {
-  chat_id: number;
-  chatRoomId: number;
-  senderId: number;
-  senderRealName: string;
-  senderUsername: string;
-  content: string;
-  // snake_case 필드도 허용 (API 응답 호환)
-  chat_room_id?: number;
-  sender_id?: number;
-  sender_real_name?: string;
-  sender_username?: string;
-  created_at?: string;
-}
+type ChatMessage = components["schemas"]["ChatResponse"];
+type MemberBriefResponse = components["schemas"]["MemberBriefResponse"];
 
 function formatTime(dateString?: string) {
   if (!dateString) return '';
@@ -33,8 +22,7 @@ export default function ChatRoomPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [stompClient, setStompClient] = useState<any>(null);
-  const [lastChatId, setLastChatId] = useState<number | undefined>(undefined);
+  const [stompClient, setStompClient] = useState<Client | null>(null);
   const chatListRef = useRef<HTMLDivElement>(null);
   const [showNewMessageAlert, setShowNewMessageAlert] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -44,34 +32,32 @@ export default function ChatRoomPage() {
 
   // members 정보 파싱
   const membersRaw = searchParams.get('members');
-  const members = membersRaw ? JSON.parse(decodeURIComponent(membersRaw)) : [];
+  const members: MemberBriefResponse[] = membersRaw ? JSON.parse(decodeURIComponent(membersRaw)) : [];
   // 상대방 정보 추출
-  const me = members.find((m: any) => String(m.member_id) === String(memberId));
-  const opponent = members.find((m: any) => String(m.member_id) !== String(memberId));
+  const opponent = members.find((m: MemberBriefResponse) => String(m.member_id) !== String(memberId));
 
   // 채팅방 ID가 바뀔 때마다 채팅 목록 불러오기
   useEffect(() => {
     if (!chatRoomId) return;
     setLoading(true);
-    const params = lastChatId ? `?last_chat_id=${lastChatId}` : '';
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat-rooms/${chatRoomId}/messages${params}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat-rooms/${chatRoomId}/messages`, {
       method: 'GET',
       credentials: 'include',
     })
       .then(res => res.json())
-      .then(data => {
-        setMessages(Array.isArray(data.data.content) ? data.data.content : []);
+      .then((data: components["schemas"]["CustomResponseBodySliceChatResponse"]) => {
+        setMessages(Array.isArray(data.data?.content) ? data.data.content : []);
       })
       .finally(() => setLoading(false));
-  }, [chatRoomId, lastChatId]);
+  }, [chatRoomId]);
 
   // WebSocket 연결 및 구독 (chatRoomId 기반)
   useEffect(() => {
     if (!memberId || !chatRoomId) return;
     const socket = new SockJS(`${process.env.NEXT_PUBLIC_API_BASE_URL}/ws`);
-    const client = Stomp.over(socket);
+    const client = new Client({ webSocketFactory: () => socket });
 
-    client.connect({}, () => {
+    client.onConnect = () => {
       setStompClient(client);
       // 채팅방 구독 경로 (백엔드에서 convertAndSend("/topic/chat-room/{chatRoomId}") 사용 중)
       client.subscribe(`/topic/chat-room/${chatRoomId}`, (message) => {
@@ -85,13 +71,18 @@ export default function ChatRoomPage() {
         // 웹소켓으로 새 메시지 도착 시에만 알림 표시 (최신값 보장)
         if (!isAtBottomRef.current) setShowNewMessageAlert(true);
       });
-    }, (error: any) => {
-      console.error('WebSocket connection error:', error);
-    });
+    };
+
+    client.onStompError = (frame) => {
+      console.error('Broker reported error:' + frame.headers['message']);
+      console.error('Additional details:' + frame.body);
+    };
+
+    client.activate();
 
     return () => {
       if (client && client.connected) {
-        client.disconnect();
+        client.deactivate();
       }
     };
   }, [memberId, chatRoomId]);
@@ -117,14 +108,14 @@ export default function ChatRoomPage() {
       sender_username: username,
       content: messageInput,
     };
-    stompClient.send('/app/chat.send', {}, JSON.stringify(chatMessage));
+    stompClient.publish({ destination: '/app/chat.send', body: JSON.stringify(chatMessage) });
     setMessageInput('');
   };
 
   // onKeyUp 핸들러 제거, onKeyDown 복원
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if ((e.nativeEvent as any).isComposing) {
+      if (e.nativeEvent.isComposing) {
         // 한글 조합 중에는 전송하지 않음
         return;
       }
@@ -139,14 +130,14 @@ export default function ChatRoomPage() {
     const lastChat = messages[messages.length - 1];
     const lastChatId = lastChat.chat_id;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat-rooms/${chatRoomId}/messages?last_chat_id=${encodeURIComponent(lastChatId)}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/chat-rooms/${chatRoomId}/messages?last_chat_id=${encodeURIComponent(lastChatId!)}`, {
         method: 'GET',
         credentials: 'include',
       });
-      const data = await res.json();
-      const newMessages = Array.isArray(data.data.content) ? data.data.content : [];
+      const data: components["schemas"]["CustomResponseBodySliceChatResponse"] = await res.json();
+      const newMessages = Array.isArray(data.data?.content) ? data.data.content : [];
       setMessages(prev => [...prev, ...newMessages]);
-      if (data.data.last || newMessages.length === 0) setHasMore(false);
+      if (data.data?.last || newMessages.length === 0) setHasMore(false);
       // 스크롤 위치 보정
       setTimeout(() => {
         const el = chatListRef.current;
@@ -180,7 +171,7 @@ export default function ChatRoomPage() {
     if (isAtBottom) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isAtBottom]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -205,10 +196,10 @@ export default function ChatRoomPage() {
               const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
               const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
               return aTime - bTime;
-            }).map((msg, index) => {
-              const isMine = String(msg.sender_id ?? msg.senderId) === String(memberId);
+            }).map((msg) => {
+              const isMine = String(msg.sender_id) === String(memberId);
               return (
-                <div key={index} className={`mb-2 flex ${isMine ? 'flex-row' : 'flex-row-reverse'} items-end`}>
+                <div key={msg.chat_id} className={`mb-2 flex ${isMine ? 'flex-row' : 'flex-row-reverse'} items-end`}>
                   <div className={`inline-block ${isMine ? 'bg-blue-200' : 'bg-white'} rounded-lg px-3 py-2 shadow-md max-w-[70%]`}>
                     <span className="ml-1" style={{ color: '#222' }}>{msg.content}</span>
                   </div>
@@ -261,4 +252,4 @@ export default function ChatRoomPage() {
       </footer>
     </div>
   );
-} 
+}

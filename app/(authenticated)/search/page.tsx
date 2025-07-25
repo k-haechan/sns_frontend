@@ -4,9 +4,13 @@ import React, { useState } from "react";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MemberSearchRequest } from './schema/memberSearchRequest';
-import { MemberSearchResponse } from './schema/memberSearchResponse';
+import Image from "next/image";
+import { components } from "@/schema";
 
-function MemberSearchList({ results }: { results: any[] }) {
+type MemberBriefResponse = components["schemas"]["MemberBriefResponse"];
+type CustomResponseBodyMemberBriefResponse = components["schemas"]["CustomResponseBodyMemberBriefResponse"];
+
+function MemberSearchList({ results }: { results: MemberBriefResponse[] }) {
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
@@ -20,15 +24,19 @@ function MemberSearchList({ results }: { results: any[] }) {
         credentials: 'include',
         body: JSON.stringify({ recipient_id: member_id }),
       });
-      const data = await res.json();
+      const data: components["schemas"]["CustomResponseBodyChatRoomResponse"] = await res.json();
       if (res.ok && data.data && data.data.chat_room_id) {
-        const membersParam = encodeURIComponent(JSON.stringify(data.data.members));
+        const membersParam = encodeURIComponent(JSON.stringify(data.data.members || []));
         router.push(`/chat/chatRoom/${data.data.chat_room_id}?members=${membersParam}`);
       } else {
         alert(data.message || '채팅방 생성에 실패했습니다.');
       }
-    } catch (e) {
-      alert('채팅방 생성 중 오류 발생');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(`채팅방 생성 중 오류 발생: ${error.message}`);
+      } else {
+        alert('알 수 없는 오류 발생');
+      }
     } finally {
       setLoadingId(null);
     }
@@ -38,18 +46,20 @@ function MemberSearchList({ results }: { results: any[] }) {
     <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
       {results.length === 0 ? (
         <li style={{ color: '#444', padding: '12px 0' }}>검색 결과가 없습니다.</li>
-      ) : results.map((member, idx) => (
-        <li key={idx} style={{ padding: "12px 0", borderBottom: "1px solid #eee", display: 'flex', alignItems: 'center', gap: 16 }}>
+      ) : results.map((member) => (
+        <li key={member.member_id} style={{ padding: "12px 0", borderBottom: "1px solid #eee", display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href={`/members/${member.member_id}`} style={{ display: 'flex', alignItems: 'center', gap: 16, textDecoration: 'none', color: 'inherit', flex: 1 }}>
-            <img
+            <Image
               src={member.profile_image_url || '/window.svg'}
               alt="프로필"
-              style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#f3f3f3', border: '1px solid #eee' }}
+              width={40}
+              height={40}
+              className="rounded-full object-cover border border-gray-200 bg-gray-100"
             />
             <span style={{ fontWeight: 600, fontSize: 18 }}>{member.username}</span>
           </Link>
           <button
-            onClick={() => handleChat(member.member_id)}
+            onClick={() => handleChat(member.member_id!)}
             style={{ padding: '6px 16px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, fontSize: 15, cursor: loadingId === member.member_id ? 'not-allowed' : 'pointer', opacity: loadingId === member.member_id ? 0.6 : 1 }}
             disabled={loadingId === member.member_id}
           >
@@ -74,7 +84,7 @@ function PostSearchList({ results }: { results: string[] }) {
 export default function SearchPage() {
   const [tab, setTab] = useState<'member' | 'post'>('member');
   const [memberQuery, setMemberQuery] = useState("");
-  const [memberResult, setMemberResult] = useState<any[]>([]);
+  const [memberResult, setMemberResult] = useState<MemberBriefResponse[]>([]);
   const [memberLoading, setMemberLoading] = useState(false);
   const [memberError, setMemberError] = useState("");
   const [postQuery, setPostQuery] = useState("");
@@ -94,11 +104,15 @@ export default function SearchPage() {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('회원 정보를 찾을 수 없습니다.');
-      const data: MemberSearchResponse = await res.json();
+      const data: CustomResponseBodyMemberBriefResponse = await res.json();
       // data.data만 파싱해서 배열로 저장
       setMemberResult(data.data ? [data.data] : []);
-    } catch (e: any) {
-      setMemberError(e.message || '검색 중 오류 발생');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMemberError(error.message || '검색 중 오류 발생');
+      } else {
+        setMemberError('알 수 없는 오류 발생');
+      }
     } finally {
       setMemberLoading(false);
     }

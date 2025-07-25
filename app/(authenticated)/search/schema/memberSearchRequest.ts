@@ -1,3 +1,3 @@
-import { components } from "@/schema";
+import { operations } from "@/schema";
 
-export type MemberSearchRequest = components["schemas"]["MemberSearchRequest"];
+export type MemberSearchRequest = operations["searchMemberByName"]["parameters"]["query"];

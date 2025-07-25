@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { loginFormSchema } from "./validation/loginFormSchema";
 import { useAuthStore } from "../store/useAuthStore";
-import { redirect } from "next/navigation";
+
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -19,14 +19,9 @@ export default function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      loginFormSchema.parse({ username, password });
-    } catch (err: any) {
-      if (err.errors && err.errors.length > 0) {
-        alert(err.errors[0].message);
-      } else {
-        alert("입력값을 확인해주세요.");
-      }
+    const result = loginFormSchema.safeParse({ username, password });
+    if (!result.success) {
+      alert(result.error.errors[0].message);
       return;
     }
     try {
@@ -52,8 +47,12 @@ export default function LoginForm() {
         const data = await res.json();
         alert(data.message || "로그인 실패");
       }
-    } catch (err) {
-      alert("네트워크 오류: 로그인 실패");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(`네트워크 오류: 로그인 실패 - ${error.message}`);
+      } else {
+        alert("알 수 없는 네트워크 오류 발생");
+      }
     }
   };
 

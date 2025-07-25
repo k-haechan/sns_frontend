@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuthStore } from "../store/useAuthStore";
 import { FaHome, FaSearch, FaComments, FaBell, FaUser, FaEdit } from 'react-icons/fa';
-import { MdImage } from 'react-icons/md';
+
 import { useState, useEffect } from "react";
 
 export default function AuthenticatedLayout({

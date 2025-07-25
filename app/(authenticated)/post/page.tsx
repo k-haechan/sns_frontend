@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
+import { components } from "@/schema";
 
 async function uploadImage(file: File, presignedUrl: string) {
   const response = await fetch(presignedUrl, {
@@ -125,14 +127,13 @@ export default function ImageUploadTestPage() {
         }),
         credentials: 'include',
       });
-      const createData = await createRes.json();
+      const createData: components["schemas"]["CustomResponseBodyPostResponse"] = await createRes.json();
       if (!createRes.ok || !createData?.data?.post_id) {
         setError(createData?.message || '게시물 생성 실패');
         setUploading(false);
         return;
       }
-      const postId = createData.data.post_id;
-      const presignedUrls = createData.data.images?.map((img: { url: string }) => img.url);
+      const presignedUrls = createData.data.images?.map((img: components["schemas"]["ImageResponse"]) => img.url);
       if (!presignedUrls || presignedUrls.length !== files.length) {
         setError('presignedUrl 개수 불일치 또는 응답 오류');
         setUploading(false);
@@ -144,8 +145,8 @@ export default function ImageUploadTestPage() {
         try {
           const webpBlob = await convertToWebp(files[i]);
           const webpFile = new File([webpBlob], `${i}.webp`, { type: 'image/webp' });
-          await uploadImage(webpFile, presignedUrls[i]);
-          uploadResults.push(presignedUrls[i].split('?')[0]);
+          await uploadImage(webpFile, presignedUrls[i]!);
+          uploadResults.push(presignedUrls[i]!.split('?')[0]);
         } catch {
           uploadResults.push('업로드 실패');
         }
@@ -156,8 +157,12 @@ export default function ImageUploadTestPage() {
       setContent('');
       setFiles([]);
       setFileInputKey(k => k + 1);
-    } catch (e: any) {
-      setError(e.message || '오류 발생');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || '오류 발생');
+      } else {
+        setError('알 수 없는 오류 발생');
+      }
     } finally {
       setUploading(false);
     }
@@ -200,10 +205,11 @@ export default function ImageUploadTestPage() {
         {previewUrls.length > 0 && (
           <div style={{ position: 'relative', width: '100%', height: 220, marginBottom: 16, background: '#f7f7f7', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <button onClick={handlePrev} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '50%', width: 32, height: 32, fontSize: 20, cursor: 'pointer', zIndex: 1 }}>&lt;</button>
-            <img
+            <Image
               src={previewUrls[currentIdx]}
               alt={`미리보기 ${currentIdx + 1}`}
-              style={{ maxWidth: '90%', maxHeight: 200, borderRadius: 6, objectFit: 'contain', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+              fill
+              style={{ objectFit: 'contain', borderRadius: 6, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
             />
             <button onClick={handleNext} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '50%', width: 32, height: 32, fontSize: 20, cursor: 'pointer', zIndex: 1 }}>&gt;</button>
             <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.3)', color: '#fff', borderRadius: 12, padding: '2px 12px', fontSize: 13 }}>{currentIdx + 1} / {previewUrls.length}</div>

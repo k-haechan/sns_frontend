@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { MyPageRequest } from './schema/myPageRequest';
+import { components } from "@/schema";
+import Image from "next/image";
 
+type PostResponse = components["schemas"]["PostResponse"];
 
 export default function MyPage() {
   const memberId = useAuthStore(state => state.memberId);
   const [member, setMember] = useState<MyPageRequest | null>(null);
   const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<PostResponse[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +23,7 @@ export default function MyPage() {
       credentials: 'include',
     })
       .then(res => res.json())
-      .then(data => setMember(data.data))
+      .then((data: components["schemas"]["CustomResponseBodyMemberDetailResponse"]) => setMember(data.data || null))
       .finally(() => setLoading(false));
     // 내 게시물 목록 요청
     setPostsLoading(true);
@@ -28,7 +31,7 @@ export default function MyPage() {
       credentials: 'include',
     })
       .then(res => res.json())
-      .then(data => setPosts(data.data?.content ? data.data.content : []))
+      .then((data: components["schemas"]["CustomResponseBodySlicePostResponse"]) => setPosts(data.data?.content ? data.data.content : []))
       .finally(() => setPostsLoading(false));
   }, [memberId]);
 
@@ -39,10 +42,12 @@ export default function MyPage() {
   return (
     <div style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 32 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
-        <img
+        <Image
           src={member.profile_image_url || '/window.svg'}
           alt="프로필"
-          style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', background: '#f3f3f3', border: '1px solid #eee' }}
+          width={80}
+          height={80}
+          style={{ borderRadius: '50%', objectFit: 'cover', background: '#f3f3f3', border: '1px solid #eee' }}
         />
         <div>
           <div style={{ fontWeight: 700, fontSize: 24, color: '#222' }}>
@@ -71,14 +76,16 @@ export default function MyPage() {
           <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>게시물이 없습니다.</div>
         ) : (
           <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
-            {posts.map((post, idx) => (
+            {posts.map((post) => (
               <div key={post.post_id} style={{ minWidth: 80, maxWidth: 100, textAlign: 'center' }}>
                 <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', background: '#f3f3f3', margin: '0 auto 6px auto', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {post.images && post.images.length > 0 ? (
-                    <img
-                      src={post.images[0].url.startsWith('http') ? post.images[0].url : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${post.images[0].url}`}
-                      alt={post.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    <Image
+                      src={post.images[0].url!.startsWith('http') ? post.images[0].url! : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${post.images[0].url}`}
+                      alt={post.title || '게시물 이미지'}
+                      width={80}
+                      height={80}
+                      style={{ objectFit: 'cover' }}
                     />
                   ) : (
                     <span style={{ color: '#bbb', fontSize: 32 }}>🖼️</span>

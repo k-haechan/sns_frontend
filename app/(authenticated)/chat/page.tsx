@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -100,10 +101,12 @@ export default function ChatRoomListPage() {
                 router.push(`/chat/chatRoom/${room.chat_room_id}?members=${membersParam}`);
               }}
             >
-              <img
+              <Image
                 src={opponent?.profile_image_url || "/window.svg"}
                 alt="프로필"
-                className="w-12 h-12 rounded-full object-cover border border-gray-200 bg-gray-100"
+                width={48}
+                height={48}
+                className="rounded-full object-cover border border-gray-200 bg-gray-100"
               />
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="font-bold text-lg text-gray-800 truncate">{opponent?.username} <span className="text-gray-500 text-sm">({opponent?.real_name})</span></div>
