@@ -6,7 +6,7 @@ export default function JoinForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [realName, setRealName] = useState("");
+  const [real_name, setRealName] = useState("");
   const [email, setEmail] = useState("");
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailCode, setEmailCode] = useState("");
@@ -19,7 +19,7 @@ export default function JoinForm() {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    const result = joinFormSchema.safeParse({ username, password, realName, email });
+    const result = joinFormSchema.safeParse({ username, password, "real-name": real_name, email });
     if (!result.success) {
       alert(result.error.errors[0].message);
       return;
@@ -29,7 +29,7 @@ export default function JoinForm() {
       const res = await fetch(`${baseUrl}/api/v1/members/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, real_name: realName, email })
+        body: JSON.stringify({ username, password, "real-name": real_name, email })
       });
       if (res.ok) {
         alert("회원가입 성공!");
@@ -121,7 +121,6 @@ export default function JoinForm() {
         value={username}
         onChange={e => setUsername(e.target.value)}
         style={{ padding: 12, borderRadius: 4, border: "1px solid #ccc", color: "#222", width: "100%" }}
-        required
         minLength={3}
         maxLength={50}
       />
@@ -131,7 +130,6 @@ export default function JoinForm() {
         value={password}
         onChange={e => setPassword(e.target.value)}
         style={{ padding: 12, borderRadius: 4, border: "1px solid #ccc", color: "#222", width: "100%" }}
-        required
         minLength={8}
         maxLength={30}
       />
@@ -141,12 +139,11 @@ export default function JoinForm() {
         value={confirmPassword}
         onChange={e => setConfirmPassword(e.target.value)}
         style={{ padding: 12, borderRadius: 4, border: "1px solid #ccc", color: "#222", width: "100%" }}
-        required
       />
       <input
         type="text"
         placeholder="이름"
-        value={realName}
+        value={real_name}
         onChange={e => setRealName(e.target.value)}
         style={{ padding: 12, borderRadius: 4, border: "1px solid #ccc", color: "#222", width: "100%" }}
         maxLength={50}
@@ -218,18 +215,18 @@ export default function JoinForm() {
         style={{
           padding: 12,
           borderRadius: 4,
-          background: username && password && confirmPassword && realName && email && emailVerified ? "#0070f3" : "#C0C0C0",
-          color: username && password && confirmPassword && realName && email && emailVerified ? "#fff" : "#222",
+          background: username && password && confirmPassword && real_name && email && emailVerified ? "#0070f3" : "#C0C0C0",
+          color: username && password && confirmPassword && real_name && email && emailVerified ? "#fff" : "#222",
           border: "none",
           fontWeight: "bold",
-          cursor: username && password && confirmPassword && realName && email && emailVerified ? "pointer" : "not-allowed",
+          cursor: username && password && confirmPassword && real_name && email && emailVerified ? "pointer" : "not-allowed",
           transition: "background 0.2s, color 0.2s",
           width: "100%"
         }}
-        disabled={!(username && password && confirmPassword && realName && email && emailVerified)}
+        disabled={!(username && password && confirmPassword && real_name && email && emailVerified)}
       >
         회원가입
       </button>
     </form>
   );
-} 
+}
