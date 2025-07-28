@@ -53,7 +53,7 @@ export default function PostDetailPage() {
       // 성공 시 새로고침 또는 post 정보 갱신
       setShowEditModal(false);
       location.reload();
-    } catch (e) {
+    } catch {
       setEditError("알 수 없는 오류가 발생했습니다.");
     } finally {
       setEditLoading(false);
@@ -127,7 +127,6 @@ export default function PostDetailPage() {
             ◀
           </button>
           <div style={{ width: 600, height: 400, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             {post.images?.[currentImage]?.url ? (
               <img
                 src={post.images[currentImage]!.url!}
