@@ -114,7 +114,7 @@ export default function PostDetailPage() {
     <div style={{ maxWidth: 600, margin: "40px auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 32 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16, color: "#222" }}>{post.title}</h1>
       <p style={{ fontSize: 16, lineHeight: 1.6, color: "#444", marginBottom: 24 }}>{post.content}</p>
-      <button onClick={handleEditClick} style={{marginBottom: 24, padding: '8px 16px', borderRadius: 6, border: '1px solid #aaa', background: '#f7f7f7', cursor: 'pointer', fontWeight: 500}}>게시물 수정</button>
+      <button onClick={handleEditClick} style={{marginBottom: 24, padding: '8px 16px', borderRadius: 6, border: '1px solid #aaa', background: '#f7f7f7', cursor: 'pointer', fontWeight: 500, color: '#222'}}>게시물 수정</button>
 
       {post.images && post.images.length > 0 && (
         <div style={{ marginBottom: 24, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -163,15 +163,15 @@ export default function PostDetailPage() {
       </div> */}
       {showEditModal && (
         <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.3)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <div style={{background:'#fff',padding:32,borderRadius:12,minWidth:320,boxShadow:'0 2px 8px rgba(0,0,0,0.15)',position:'relative'}}>
-            <h2 style={{marginBottom:16}}>게시물 수정</h2>
+          <div style={{background:'#fff',padding:32,borderRadius:12,minWidth:320,boxShadow:'0 2px 8px rgba(0,0,0,0.15)',position:'relative', color:'#222'}}>
+            <h2 style={{marginBottom:16, color:'#222'}}>게시물 수정</h2>
             <div style={{marginBottom:12}}>
-              <input type="text" value={editTitle} onChange={e=>setEditTitle(e.target.value)} placeholder="제목" style={{width:'100%',padding:8,borderRadius:4,border:'1px solid #ccc',marginBottom:8}} />
-              <textarea value={editContent} onChange={e=>setEditContent(e.target.value)} placeholder="내용" rows={5} style={{width:'100%',padding:8,borderRadius:4,border:'1px solid #ccc'}} />
+              <input type="text" value={editTitle} onChange={e=>setEditTitle(e.target.value)} placeholder="제목" style={{width:'100%',padding:8,borderRadius:4,border:'1px solid #ccc',marginBottom:8, color:'#222'}} />
+              <textarea value={editContent} onChange={e=>setEditContent(e.target.value)} placeholder="내용" rows={5} style={{width:'100%',padding:8,borderRadius:4,border:'1px solid #ccc', color:'#222'}} />
             </div>
             {editError && <div style={{color:'red',marginBottom:8}}>{editError}</div>}
             <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
-              <button onClick={()=>setShowEditModal(false)} disabled={editLoading} style={{padding:'8px 16px',borderRadius:4,border:'1px solid #aaa',background:'#eee',cursor:'pointer'}}>취소</button>
+              <button onClick={()=>setShowEditModal(false)} disabled={editLoading} style={{padding:'8px 16px',borderRadius:4,border:'1px solid #aaa',background:'#eee',cursor:'pointer', color:'#222'}}>취소</button>
               <button onClick={handleEditSubmit} disabled={editLoading} style={{padding:'8px 16px',borderRadius:4,border:'1px solid #0070f3',background:'#0070f3',color:'#fff',cursor:'pointer',fontWeight:500}}>
                 {editLoading ? '수정 중...' : '수정하기'}
               </button>
