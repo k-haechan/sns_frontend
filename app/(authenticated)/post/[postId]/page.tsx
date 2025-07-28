@@ -11,6 +11,7 @@ export default function PostDetailPage() {
   const [post, setPost] = useState<PostResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
     if (!postId) {
@@ -68,20 +69,37 @@ export default function PostDetailPage() {
       <p style={{ fontSize: 16, lineHeight: 1.6, color: "#444", marginBottom: 24 }}>{post.content}</p>
 
       {post.images && post.images.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          {post.images.map((image, index) => (
-            <div key={index} style={{ marginBottom: 16, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={image.url!}
-                alt={post.title || `게시물 이미지 ${index + 1}`}
-                width={600}
-                height={400}
-                style={{ objectFit: "cover", width: "100%", height: "auto" }}
-                crossOrigin="use-credentials"
-              />
-            </div>
-          ))}
+        <div style={{ marginBottom: 24, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button
+            onClick={() => setCurrentImage((prev) => (prev === 0 ? (post.images?.length ?? 1) - 1 : prev - 1))}
+            style={{ position: "absolute", left: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }}
+            aria-label="이전 이미지"
+            disabled={post.images?.length === 1}
+          >
+            ◀
+          </button>
+          <div style={{ width: 600, height: 400, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.images?.[currentImage]?.url!}
+              alt={post.title || `게시물 이미지 ${currentImage + 1}`}
+              width={600}
+              height={400}
+              style={{ objectFit: "cover", width: "100%", height: "100%" }}
+              crossOrigin="use-credentials"
+            />
+          </div>
+          <button
+            onClick={() => setCurrentImage((prev) => (prev === (post.images?.length ?? 1) - 1 ? 0 : prev + 1))}
+            style={{ position: "absolute", right: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }}
+            aria-label="다음 이미지"
+            disabled={post.images?.length === 1}
+          >
+            ▶
+          </button>
+          <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontSize: 14, color: "#666" }}>
+            {currentImage + 1} / {post.images?.length}
+          </div>
         </div>
       )}
 
