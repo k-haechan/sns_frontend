@@ -10,8 +10,8 @@ const nextConfig: NextConfig = {
       // static.sns1.haechan.siteimages 도메인 추가
       {
         protocol: "https",
-        hostname: "static.sns1.haechan.siteimages",
-        pathname: "/**",
+        hostname: "static.sns1.haechan.site",
+        pathname: "/images/**",
       },
     ],
   },
