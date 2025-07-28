@@ -72,12 +72,13 @@ export default function PostDetailPage() {
         <div style={{ marginBottom: 24 }}>
           {post.images.map((image, index) => (
             <div key={index} style={{ marginBottom: 16, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
-              <Image
+              <img
                 src={image.url!}
                 alt={post.title || `게시물 이미지 ${index + 1}`}
                 width={600}
                 height={400}
                 style={{ objectFit: "cover", width: "100%", height: "auto" }}
+                crossOrigin="use-credentials"
               />
             </div>
           ))}

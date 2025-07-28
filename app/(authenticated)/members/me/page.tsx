@@ -46,7 +46,7 @@ export default function MyPage() {
   return (
     <div style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 32 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
-        <Image
+        <img
           src={member.profile_image_url || '/window.svg'}
           alt="프로필"
           width={80}
