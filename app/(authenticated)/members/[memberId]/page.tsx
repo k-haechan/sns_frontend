@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { components } from "@/schema";
 import Image from "next/image";
+import MemberProfile from '../MemberProfile';
+import MemberPostGrid from '../MemberPostGrid';
 
 type MemberDetailResponse = components["schemas"]["MemberDetailResponse"];
 type ChatRoomRequest = components["schemas"]["ChatRoomRequest"];
@@ -15,6 +17,8 @@ export default function MemberDetailPage() {
   const [member, setMember] = useState<MemberDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,6 +30,14 @@ export default function MemberDetailPage() {
       .then(res => res.json())
       .then((data: components["schemas"]["CustomResponseBodyMemberDetailResponse"]) => setMember(data.data || null))
       .finally(() => setLoading(false));
+    // 게시글 목록도 불러오기
+    setPostsLoading(true);
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${memberId}/posts?page=0&size=100`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then((data: components["schemas"]["CustomResponseBodySlicePostResponse"]) => setPosts(data.data?.content ? data.data.content : []))
+      .finally(() => setPostsLoading(false));
   }, [memberId]);
 
   if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>로딩 중...</div>;
@@ -63,43 +75,44 @@ export default function MemberDetailPage() {
 
   return (
     <div style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 32 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
-        <Image
-          src={member.profile_image_url || '/window.svg'}
-          alt="프로필"
-          width={80}
-          height={80}
-          style={{ borderRadius: '50%', objectFit: 'cover', background: '#f3f3f3', border: '1px solid #eee' }}
-        />
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 24, color: '#222' }}>
-            {member.username}
-            {member.real_name && <span style={{ color: '#888', fontWeight: 400, fontSize: 18 }}> ({member.real_name})</span>}
+      <MemberProfile
+        member={{
+          profile_image_url: member.profile_image_url ?? null,
+          username: member.username ?? '',
+          real_name: member.real_name ?? null,
+          introduction: member.introduction ?? null,
+          follower_count: member.follower_count ?? 0,
+          following_count: member.following_count ?? 0,
+        }}
+      >
+        {!isMyPage && (
+          <div style={{ marginTop: 32, textAlign: 'center' }}>
+            <button
+              onClick={handleChat}
+              style={{ padding: '12px 32px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 18, cursor: chatLoading ? 'not-allowed' : 'pointer', opacity: chatLoading ? 0.6 : 1 }}
+              disabled={chatLoading}
+            >
+              {chatLoading ? '채팅방 연결 중...' : '채팅 보내기'}
+            </button>
           </div>
-          <div style={{ color: '#888', marginTop: 4 }}>{member.introduction || '자기소개가 없습니다.'}</div>
-        </div>
+        )}
+      </MemberProfile>
+      {/* 회원 게시물 썸네일 리스트 */}
+      <div style={{ marginTop: 36 }}>
+        <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 12 }}>게시물</div>
+        {postsLoading ? (
+          <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>게시물 불러오는 중...</div>
+        ) : (
+          <MemberPostGrid
+            posts={posts.map(post => ({
+              post_id: post.post_id ?? 0,
+              title: post.title ?? '',
+              images: post.images ?? [],
+            }))}
+            onPostClick={post => router.push(`/post/${post.post_id}`)}
+          />
+        )}
       </div>
-      <div style={{ display: 'flex', gap: 32, justifyContent: 'center', marginTop: 16 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.follower_count}</div>
-          <div style={{ color: '#888', fontSize: 14 }}>팔로워</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.following_count}</div>
-          <div style={{ color: '#888', fontSize: 14 }}>팔로잉</div>
-        </div>
-      </div>
-      {!isMyPage && (
-        <div style={{ marginTop: 32, textAlign: 'center' }}>
-          <button
-            onClick={handleChat}
-            style={{ padding: '12px 32px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 18, cursor: chatLoading ? 'not-allowed' : 'pointer', opacity: chatLoading ? 0.6 : 1 }}
-            disabled={chatLoading}
-          >
-            {chatLoading ? '채팅방 연결 중...' : '채팅 보내기'}
-          </button>
-        </div>
-      )}
     </div>
   );
 } 

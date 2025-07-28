@@ -6,6 +6,8 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import { MyPageRequest } from './schema/myPageRequest';
 import { components } from "@/schema";
 import Image from "next/image";
+import MemberProfile from '../MemberProfile';
+import MemberPostGrid from '../MemberPostGrid';
 
 type PostResponse = components["schemas"]["PostResponse"];
 
@@ -54,69 +56,30 @@ export default function MyPage() {
 
   return (
     <div style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 32 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
-        <img
-          src={member.profile_image_url || '/window.svg'}
-          alt="프로필"
-          width={80}
-          height={80}
-          style={{ borderRadius: '50%', objectFit: 'cover', background: '#f3f3f3', border: '1px solid #eee' }}
-        />
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 24, color: '#222' }}>
-            {member.username}
-            {member.real_name && <span style={{ color: '#888', fontWeight: 400, fontSize: 18 }}> ({member.real_name})</span>}
-          </div>
-          <div style={{ color: '#888', marginTop: 4 }}>{member.introduction || '자기소개가 없습니다.'}</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 32, justifyContent: 'center', marginTop: 16 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.follower_count}</div>
-          <div style={{ color: '#888', fontSize: 14 }}>팔로워</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.following_count}</div>
-          <div style={{ color: '#888', fontSize: 14 }}>팔로잉</div>
-        </div>
-      </div>
+      <MemberProfile
+        member={{
+          profile_image_url: member.profile_image_url ?? null,
+          username: member.username ?? '',
+          real_name: member.real_name ?? null,
+          introduction: member.introduction ?? null,
+          follower_count: member.follower_count ?? 0,
+          following_count: member.following_count ?? 0,
+        }}
+      />
       {/* 내 게시물 썸네일 리스트 */}
       <div style={{ marginTop: 36 }}>
         <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 12 }}>내 게시물</div>
         {postsLoading ? (
           <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>게시물 불러오는 중...</div>
-        ) : posts.length === 0 ? (
-          <div style={{ color: '#888', textAlign: 'center', padding: 16 }}>게시물이 없습니다.</div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 8 }}>
-            {chunkArray(posts, 4).map((row, rowIdx) => (
-              <div key={rowIdx} style={{ display: 'flex', gap: 12 }}>
-                {row.map((post) => (
-                  <div
-                    key={post.post_id}
-                    style={{ minWidth: 80, maxWidth: 100, textAlign: 'center', cursor: 'pointer' }}
-                    onClick={() => router.push(`/post/${post.post_id}`)}
-                  >
-                    <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', background: '#f3f3f3', margin: '0 auto 6px auto', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {post.images && post.images.length > 0 ? (
-                        <img
-                          src={post.images[0].url!}
-                          alt={post.title || '게시물 이미지'}
-                          width={80}
-                          height={80}
-                          style={{ objectFit: 'cover' }}
-                          crossOrigin="use-credentials"
-                        />
-                      ) : (
-                        <span style={{ color: '#bbb', fontSize: 32 }}>🖼️</span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: 13, color: '#222', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
+          <MemberPostGrid
+            posts={posts.map(post => ({
+              post_id: post.post_id ?? 0,
+              title: post.title ?? '',
+              images: post.images ?? [],
+            }))}
+            onPostClick={post => router.push(`/post/${post.post_id}`)}
+          />
         )}
       </div>
     </div>
