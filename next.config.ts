@@ -7,10 +7,10 @@ const parsedStorageUrl = new URL(storageBaseUrl);
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
+      // static.sns1.haechan.siteimages 도메인 추가
       {
-        protocol: parsedStorageUrl.protocol.replace(":", "") as "http" | "https",
-        hostname: parsedStorageUrl.hostname,
-        port: parsedStorageUrl.port || undefined,
+        protocol: "https",
+        hostname: "static.sns1.haechan.siteimages",
         pathname: "/**",
       },
     ],

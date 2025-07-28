@@ -73,14 +73,12 @@ export default function PostDetailPage() {
           {post.images.map((image, index) => (
             <div key={index} style={{ marginBottom: 16, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
               <Image
-                src={image.url!.replace('static.sns1.haechan.siteimages', 'static.sns1.haechan.site/images')}
+                src={image.url!}
                 alt={post.title || `게시물 이미지 ${index + 1}`}
                 width={600}
                 height={400}
                 style={{ objectFit: "cover", width: "100%", height: "auto" }}
               />
-              {console.log("image.url:", image.url)}
-              {console.log("Constructed src:", image.url!.startsWith('http') ? image.url! : `${process.env.NEXT_PUBLIC_STORAGE_BASE_URL}/${image.url}`)}
             </div>
           ))}
         </div>
