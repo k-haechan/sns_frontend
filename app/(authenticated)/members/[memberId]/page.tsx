@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { components } from "@/schema";
-import Image from "next/image";
 import MemberProfile from '../MemberProfile';
 import MemberPostGrid from '../MemberPostGrid';
 
@@ -17,7 +16,7 @@ export default function MemberDetailPage() {
   const [member, setMember] = useState<MemberDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<components["schemas"]["PostResponse"][]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const router = useRouter();
 

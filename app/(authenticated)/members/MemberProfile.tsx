@@ -16,6 +16,7 @@ export default function MemberProfile({ member, children }: MemberProfileProps) 
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={member.profile_image_url || '/window.svg'}
           alt="프로필"

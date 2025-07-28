@@ -5,20 +5,20 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from '../../../store/useAuthStore';
 import { MyPageRequest } from './schema/myPageRequest';
 import { components } from "@/schema";
-import Image from "next/image";
+// import Image from "next/image"; // 삭제
 import MemberProfile from '../MemberProfile';
 import MemberPostGrid from '../MemberPostGrid';
 
 type PostResponse = components["schemas"]["PostResponse"];
 
 // posts를 4개씩 나누는 유틸 함수
-function chunkArray<T>(array: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
-  }
-  return result;
-}
+// function chunkArray<T>(array: T[], size: number): T[][] {
+//   const result: T[][] = [];
+//   for (let i = 0; i < array.length; i += size) {
+//     result.push(array.slice(i, i + size));
+//   }
+//   return result;
+// }
 
 export default function MyPage() {
   const router = useRouter();

@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { components } from "@/schema";
 
 type PostResponse = components["schemas"]["PostResponse"];
@@ -72,6 +71,7 @@ export default function PostDetailPage() {
         <div style={{ marginBottom: 24 }}>
           {post.images.map((image, index) => (
             <div key={index} style={{ marginBottom: 16, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={image.url!}
                 alt={post.title || `게시물 이미지 ${index + 1}`}
