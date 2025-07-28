@@ -80,14 +80,20 @@ export default function PostDetailPage() {
           </button>
           <div style={{ width: 600, height: 400, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={post.images?.[currentImage]?.url!}
-              alt={post.title || `게시물 이미지 ${currentImage + 1}`}
-              width={600}
-              height={400}
-              style={{ objectFit: "cover", width: "100%", height: "100%" }}
-              crossOrigin="use-credentials"
-            />
+            {post.images?.[currentImage]?.url ? (
+              <img
+                src={post.images[currentImage]!.url!}
+                alt={post.title || `게시물 이미지 ${currentImage + 1}`}
+                width={600}
+                height={400}
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                crossOrigin="use-credentials"
+              />
+            ) : (
+              <div style={{width:600, height:400, display:'flex', alignItems:'center', justifyContent:'center', background:'#eee', color:'#888'}}>
+                이미지 없음
+              </div>
+            )}
           </div>
           <button
             onClick={() => setCurrentImage((prev) => (prev === (post.images?.length ?? 1) - 1 ? 0 : prev + 1))}
