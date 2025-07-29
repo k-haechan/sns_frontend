@@ -273,11 +273,21 @@ export interface components {
         ImageResponse: {
             url?: string;
         };
+        MemberBriefResponse: {
+            /** Format: int64 */
+            member_id?: number;
+            username?: string;
+            real_name?: string;
+            profile_image_url?: string;
+        };
         PostResponse: {
             /** Format: int64 */
             post_id?: number;
             title?: string;
             content?: string;
+            /** Format: date-time */
+            create_at?: string;
+            author?: components["schemas"]["MemberBriefResponse"];
             images?: components["schemas"]["ImageResponse"][];
         };
         JoinRequest: {
@@ -319,13 +329,6 @@ export interface components {
         CustomResponseBodyChatRoomResponse: {
             message?: string;
             data?: components["schemas"]["ChatRoomResponse"];
-        };
-        MemberBriefResponse: {
-            /** Format: int64 */
-            member_id?: number;
-            username?: string;
-            real_name?: string;
-            profile_image_url?: string;
         };
         LoginRequest: {
             /**
@@ -393,12 +396,12 @@ export interface components {
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
         };
         SlicePostResponse: {
             first?: boolean;
@@ -416,8 +419,8 @@ export interface components {
         };
         SortObject: {
             empty?: boolean;
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
         };
         CustomResponseBodySliceChatRoomResponse: {
             message?: string;
@@ -499,16 +502,18 @@ export interface operations {
     };
     updatePost: {
         parameters: {
-            query: {
-                request: components["schemas"]["PostRequest"];
-            };
+            query?: never;
             header?: never;
             path: {
                 "post-id": number;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -776,7 +781,7 @@ export interface operations {
     getMemberPosts: {
         parameters: {
             query: {
-                cursorId?: number;
+                "cursor-id"?: number;
                 pageable: components["schemas"]["Pageable"];
             };
             header?: never;
