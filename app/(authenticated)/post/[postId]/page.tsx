@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import React from "react";
 import { components } from "@/schema";
+import { useAuthStore } from '../../../store/useAuthStore'
 
 type PostResponse = components["schemas"]["PostResponse"];
 
@@ -18,6 +19,12 @@ export default function PostDetailPage() {
   const [editContent, setEditContent] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
   const [editLoading, setEditLoading] = useState(false);
+
+  // 로그인한 사용자 정보 가져오기
+  const { memberId } = useAuthStore();
+
+  // 현재 로그인한 사용자가 게시물 작성자인지 확인
+  const isAuthor = memberId !== null && post?.author?.member_id === memberId;
 
   const handleEditClick = () => {
     setEditTitle(post?.title || "");
@@ -58,6 +65,31 @@ export default function PostDetailPage() {
     } finally {
       setEditLoading(false);
     }
+  };
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "";
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return "방금 전";
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}일 전`;
+    
+    // 7일 이상이면 실제 날짜 표시
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   useEffect(() => {
@@ -114,7 +146,43 @@ export default function PostDetailPage() {
     <div style={{ maxWidth: 600, margin: "40px auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", padding: 32 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16, color: "#222" }}>{post.title}</h1>
       <p style={{ fontSize: 16, lineHeight: 1.6, color: "#444", marginBottom: 24 }}>{post.content}</p>
-      <button onClick={handleEditClick} style={{marginBottom: 24, padding: '8px 16px', borderRadius: 6, border: '1px solid #aaa', background: '#f7f7f7', cursor: 'pointer', fontWeight: 500, color: '#222'}}>게시물 수정</button>
+      
+      {/* 작성자 및 작성 시간 정보 */}
+      <div style={{ fontSize: 14, color: "#888", marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+        {post.author?.profile_image_url && (
+          <img 
+            src={post.author.profile_image_url} 
+            alt={post.author.real_name || post.author.username || "작성자"} 
+            style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+          />
+        )}
+        <div>
+          <div style={{ fontWeight: 500, color: '#333' }}>
+            {post.author?.real_name || post.author?.username}
+          </div>
+          <div>{formatDate(post.create_at)}</div>
+        </div>
+      </div>
+
+      {/* 수정 버튼 - 작성자만 볼 수 있음 */}
+      {isAuthor && (
+        <button 
+          onClick={handleEditClick} 
+          style={{
+            marginBottom: 24, 
+            padding: '8px 16px', 
+            borderRadius: 6, 
+            border: '1px solid #0070f3', 
+            background: '#0070f3', 
+            color: '#fff',
+            cursor: 'pointer', 
+            fontWeight: 500,
+            fontSize: 14
+          }}
+        >
+          게시물 수정
+        </button>
+      )}
 
       {post.images && post.images.length > 0 && (
         <div style={{ marginBottom: 24, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -156,11 +224,6 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* 추가 정보 (예: 작성자, 작성일 등) */}
-      {/* <div style={{ fontSize: 14, color: "#888", borderTop: "1px solid #eee", paddingTop: 16 }}>
-        <p>작성자: {post.author?.username}</p>
-        <p>작성일: {new Date(post.createdAt).toLocaleDateString()}</p>
-      </div> */}
       {showEditModal && (
         <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.3)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <div style={{background:'#fff',padding:32,borderRadius:12,minWidth:320,boxShadow:'0 2px 8px rgba(0,0,0,0.15)',position:'relative', color:'#222'}}>
