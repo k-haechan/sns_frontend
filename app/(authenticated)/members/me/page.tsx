@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState as useReactState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
 import { useAuthStore } from '../../../store/useAuthStore';
 import { MyPageRequest } from './schema/myPageRequest';
@@ -13,10 +13,10 @@ type PostResponse = components["schemas"]["PostResponse"];
 export default function MyPage() {
   const router = useRouter();
   const memberId = useAuthStore(state => state.memberId);
-  const [member, setMember] = useReactState<MyPageRequest | null>(null);
-  const [loading, setLoading] = useReactState(true);
-  const [posts, setPosts] = useReactState<PostResponse[]>([]);
-  const [postsLoading, setPostsLoading] = useReactState(true);
+  const [member, setMember] = useState<MyPageRequest | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   useEffect(() => {
     if (!memberId) return;
@@ -36,7 +36,7 @@ export default function MyPage() {
       .then(res => res.json())
       .then((data: components["schemas"]["CustomResponseBodySlicePostResponse"]) => setPosts(data.data?.content ? data.data.content : []))
       .finally(() => setPostsLoading(false));
-  }, [memberId]);
+  }, [memberId, setLoading, setMember, setPosts, setPostsLoading]);
 
   if (!memberId) return <div style={{ padding: 40, textAlign: 'center' }}>로그인이 필요합니다.</div>;
   if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>로딩 중...</div>;

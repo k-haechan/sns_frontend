@@ -35,14 +35,17 @@ export default function MemberPostGrid({ posts, onPostClick }: MemberPostGridPro
             >
               <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', background: '#f3f3f3', margin: '0 auto 6px auto', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {post.images && post.images.length > 0 ? (
-                  <img
-                    src={post.images[0].url!}
-                    alt={post.title || '게시물 이미지'}
-                    width={80}
-                    height={80}
-                    style={{ objectFit: 'cover' }}
-                    crossOrigin="use-credentials"
-                  />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={post.images[0].url!}
+                      alt={post.title || '게시물 이미지'}
+                      width={80}
+                      height={80}
+                      style={{ objectFit: 'cover' }}
+                      crossOrigin="use-credentials"
+                    />
+                  </>
                 ) : (
                   <span style={{ color: '#bbb', fontSize: 32 }}>🖼️</span>
                 )}

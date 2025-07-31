@@ -21,54 +21,11 @@ export default function MemberDetailPage() {
   const router = useRouter();
   const [followLoading, setFollowLoading] = useState(false);
   const [followError, setFollowError] = useState<string | null>(null);
-  const [followSuccess, setFollowSuccess] = useState(false);
   const [followStatus, setFollowStatus] = useState<string | null>(null);
   const [checkingFollow, setCheckingFollow] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
-  const [showFollowerModal, setShowFollowerModal] = useState(false);
-  const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [followers, setFollowers] = useState<components["schemas"]["MemberBriefResponse"][]>([]);
-  const [following, setFollowing] = useState<components["schemas"]["MemberBriefResponse"][]>([]);
-  const [followersLoading, setFollowersLoading] = useState(false);
-  const [followingLoading, setFollowingLoading] = useState(false);
 
   const isMyPage = myId && String(myId) === String(memberId);
-
-  const handleFollowerClick = async () => {
-    setShowFollowerModal(true);
-    setFollowersLoading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/members/${memberId}/followers?page=0&size=10`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setFollowers(data.data?.content?.map((follow: components["schemas"]["FollowResponse"]) => follow.following) || []);
-      }
-    } catch (error) {
-    } finally {
-      setFollowersLoading(false);
-    }
-  };
-
-  const handleFollowingClick = async () => {
-    setShowFollowingModal(true);
-    setFollowingLoading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/members/${memberId}/followings?page=0&size=10`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        console.log('팔로잉 API 응답:', data);
-        setFollowing(data.data?.content?.map((follow: components["schemas"]["FollowResponse"]) => follow.follower) || []);
-      }
-    } catch (error) {
-      console.error('팔로잉 목록 조회 실패:', error);
-    } finally {
-      setFollowingLoading(false);
-    }
-  };
 
   useEffect(() => {
     if (!memberId) return;
@@ -114,7 +71,6 @@ export default function MemberDetailPage() {
   const handleFollow = async () => {
     setFollowLoading(true);
     setFollowError(null);
-    setFollowSuccess(false);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/members/${memberId}`, {
         method: 'POST',
@@ -135,7 +91,6 @@ export default function MemberDetailPage() {
       } else {
         setFollowStatus('NONE');
       }
-      setFollowSuccess(true);
     } catch {
       setFollowError('알 수 없는 오류가 발생했습니다.');
     } finally {

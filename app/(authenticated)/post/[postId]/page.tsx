@@ -178,11 +178,14 @@ export default function PostDetailPage() {
       {/* 작성자 및 작성 시간 정보 */}
       <div style={{ fontSize: 14, color: "#888", marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
         {post.author?.profile_image_url && (
-          <img 
-            src={post.author.profile_image_url} 
-            alt={post.author.real_name || post.author.username || "작성자"} 
-            style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={post.author.profile_image_url} 
+              alt={post.author.real_name || post.author.username || "작성자"} 
+              style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+            />
+          </>
         )}
         <div>
           <div style={{ fontWeight: 500, color: '#333' }}>
@@ -215,14 +218,17 @@ export default function PostDetailPage() {
           </button>
           <div style={{ width: 600, height: 400, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             {post.images?.[currentImage]?.url ? (
-              <img
-                src={post.images[currentImage]!.url!}
-                alt={post.title || `게시물 이미지 ${currentImage + 1}`}
-                width={600}
-                height={400}
-                style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                crossOrigin="use-credentials"
-              />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={post.images[currentImage]!.url!}
+                  alt={post.title || `게시물 이미지 ${currentImage + 1}`}
+                  width={600}
+                  height={400}
+                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                  crossOrigin="use-credentials"
+                />
+              </>
             ) : (
               <div style={{width:600, height:400, display:'flex', alignItems:'center', justifyContent:'center', background:'#eee', color:'#888'}}>
                 이미지 없음

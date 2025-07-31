@@ -56,7 +56,10 @@ export default function FollowListModal({ memberId, type, onClose }: FollowListM
               >
                 <div style={{width:40,height:40,borderRadius:'50%',background:'#f0f0f0',marginRight:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   {item.profile_image_url ? (
-                    <img src={item.profile_image_url} alt="프로필" style={{width:40,height:40,borderRadius:'50%',objectFit:'cover'}} />
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={item.profile_image_url} alt="프로필" style={{width:40,height:40,borderRadius:'50%',objectFit:'cover'}} />
+                    </>
                   ) : (
                     <span style={{fontSize:20}}>👤</span>
                   )}
