@@ -114,7 +114,7 @@ export default function PostDetailPage() {
         const data = await res.json();
         throw new Error(data.message || "삭제 실패");
       }
-      router.push("/members/me");
+      location.reload();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setDeleteError(err.message || "알 수 없는 오류가 발생했습니다.");
