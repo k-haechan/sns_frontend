@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import React from "react";
 import { components } from "@/schema";
@@ -29,7 +29,7 @@ export default function PostDetailPage() {
   const [editingComment, setEditingComment] = useState<CommentResponse | null>(null);
 
   const { memberId } = useAuthStore();
-  const router = useRouter();
+  
 
   const isMyPost = post?.author?.member_id && memberId && post.author.member_id === memberId;
 
