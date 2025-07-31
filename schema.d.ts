@@ -32,6 +32,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/posts/comments/{comment-id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 게시물 댓글 수정
+         * @description 게시물의 댓글을 수정합니다.
+         */
+        put: operations["updateComment"];
+        post?: never;
+        /**
+         * 게시물 댓글 삭제
+         * @description 게시물의 댓글을 삭제합니다.
+         */
+        delete: operations["deleteComment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/members": {
         parameters: {
             query?: never;
@@ -70,6 +94,30 @@ export interface paths {
          * @description 게시물을 생성합니다.
          */
         post: operations["generatePost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{post-id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 게시물 댓글 조회
+         * @description 게시물의 댓글을 조회합니다.
+         */
+        get: operations["getComments"];
+        put?: never;
+        /**
+         * 게시물 댓글 생성
+         * @description 게시물에 댓글을 생성합니다.
+         */
+        post: operations["createComment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -422,6 +470,27 @@ export interface components {
             author?: components["schemas"]["MemberBriefResponse"];
             images?: components["schemas"]["ImageResponse"][];
         };
+        CommentRequest: {
+            content?: string;
+        };
+        CommentResponse: {
+            content?: string;
+            /** Format: int64 */
+            postId?: number;
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            likeCount?: number;
+            /** Format: int64 */
+            reCommentCount?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            member?: components["schemas"]["MemberBriefResponse"];
+        };
+        CustomResponseBodyCommentResponse: {
+            message?: string;
+            data?: components["schemas"]["CommentResponse"];
+        };
         ModifyRequest: {
             real_name?: string;
             profile_image_url?: string;
@@ -542,9 +611,9 @@ export interface components {
             size?: number;
             sort?: string[];
         };
-        CustomResponseBodySlicePostResponse: {
+        CustomResponseBodySliceCommentResponse: {
             message?: string;
-            data?: components["schemas"]["SlicePostResponse"];
+            data?: components["schemas"]["SliceCommentResponse"];
         };
         PageableObject: {
             /** Format: int64 */
@@ -557,6 +626,29 @@ export interface components {
             pageSize?: number;
             unpaged?: boolean;
         };
+        SliceCommentResponse: {
+            first?: boolean;
+            last?: boolean;
+            /** Format: int32 */
+            size?: number;
+            content?: components["schemas"]["CommentResponse"][];
+            /** Format: int32 */
+            number?: number;
+            sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            numberOfElements?: number;
+            empty?: boolean;
+        };
+        SortObject: {
+            empty?: boolean;
+            sorted?: boolean;
+            unsorted?: boolean;
+        };
+        CustomResponseBodySlicePostResponse: {
+            message?: string;
+            data?: components["schemas"]["SlicePostResponse"];
+        };
         SlicePostResponse: {
             first?: boolean;
             last?: boolean;
@@ -566,15 +658,10 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
-        };
-        SortObject: {
-            empty?: boolean;
-            sorted?: boolean;
-            unsorted?: boolean;
         };
         CustomResponseBodySliceFollowResponse: {
             message?: string;
@@ -589,9 +676,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         CustomResponseBodySliceChatRoomResponse: {
@@ -607,9 +694,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         ChatResponse: {
@@ -636,9 +723,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
     };
@@ -720,6 +807,54 @@ export interface operations {
             };
         };
     };
+    updateComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "comment-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyCommentResponse"];
+                };
+            };
+        };
+    };
+    deleteComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "comment-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyString"];
+                };
+            };
+        };
+    };
     searchMemberByName: {
         parameters: {
             query: {
@@ -786,6 +921,56 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CustomResponseBodyPostResponse"];
+                };
+            };
+        };
+    };
+    getComments: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path: {
+                "post-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodySliceCommentResponse"];
+                };
+            };
+        };
+    };
+    createComment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "post-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyCommentResponse"];
                 };
             };
         };
@@ -906,7 +1091,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                "member-id": number;
+            };
             cookie?: never;
         };
         requestBody?: never;
