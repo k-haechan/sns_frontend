@@ -1,5 +1,5 @@
 "use client";
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
@@ -16,6 +16,7 @@ function formatTime(dateString?: string) {
 }
 
 export default function ChatRoomPage() {
+  const router = useRouter();
   const { chatRoomId } = useParams();
   const searchParams = useSearchParams();
   const { memberId, realName, username, _hasHydrated } = useAuthStore();
@@ -199,11 +200,24 @@ export default function ChatRoomPage() {
             }).map((msg) => {
               const isMine = String(msg.sender_id) === String(memberId);
               return (
-                <div key={msg.chat_id} className={`mb-2 flex ${isMine ? 'flex-row' : 'flex-row-reverse'} items-end`}>
+                <div key={msg.chat_id} className={`mb-2 flex ${isMine ? 'justify-end' : 'justify-start'} items-end`}>
+                  {!isMine && (
+                    <div 
+                      className="w-8 h-8 rounded-full overflow-hidden mr-2 flex-shrink-0 cursor-pointer"
+                      onClick={() => opponent?.member_id && router.push(`/members/${opponent.member_id}`)}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={opponent?.profile_image_url || '/window.svg'} 
+                        alt={opponent?.real_name || opponent?.username || '프로필'}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
                   <div className={`inline-block ${isMine ? 'bg-blue-200' : 'bg-white'} rounded-lg px-3 py-2 shadow-md max-w-[70%]`}>
                     <span className="ml-1" style={{ color: '#222' }}>{msg.content}</span>
                   </div>
-                  <span className={`text-xs text-gray-400 mx-2 mb-1 whitespace-nowrap ${isMine ? 'order-2' : 'order-1'}`}>{formatTime(msg.created_at)}</span>
+                  <span className={`text-xs text-gray-400 mx-2 mb-1 whitespace-nowrap`}>{formatTime(msg.created_at)}</span>
                 </div>
               );
             })}
