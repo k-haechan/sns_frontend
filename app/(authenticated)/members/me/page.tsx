@@ -1,46 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState as useReactState } from 'react';
 import { useRouter } from "next/navigation";
 import { useAuthStore } from '../../../store/useAuthStore';
 import { MyPageRequest } from './schema/myPageRequest';
 import { components } from "@/schema";
-// import Image from "next/image"; // 삭제
 import MemberProfile from '../MemberProfile';
 import MemberPostGrid from '../MemberPostGrid';
 
 type PostResponse = components["schemas"]["PostResponse"];
 
-// posts를 4개씩 나누는 유틸 함수
-// function chunkArray<T>(array: T[], size: number): T[][] {
-//   const result: T[][] = [];
-//   for (let i = 0; i < array.length; i += size) {
-//     result.push(array.slice(i, i + size));
-//   }
-//   return result;
-// }
-
 export default function MyPage() {
   const router = useRouter();
   const memberId = useAuthStore(state => state.memberId);
-  const [member, setMember] = useState<MyPageRequest | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState<PostResponse[]>([]);
-  const [postsLoading, setPostsLoading] = useState(true);
+  const [member, setMember] = useReactState<MyPageRequest | null>(null);
+  const [loading, setLoading] = useReactState(true);
+  const [posts, setPosts] = useReactState<PostResponse[]>([]);
+  const [postsLoading, setPostsLoading] = useReactState(true);
 
   useEffect(() => {
     if (!memberId) return;
     setLoading(true);
-    // 내 정보 요청 시
     const memberApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${memberId}`;
-    console.log("Fetching member data from:", memberApiUrl); // <-- Add this line
     fetch(memberApiUrl, {
       credentials: 'include',
     })
       .then(res => res.json())
       .then((data: components["schemas"]["CustomResponseBodyMemberDetailResponse"]) => setMember(data.data || null))
       .finally(() => setLoading(false));
-    // 내 게시물 목록 요청
+
     setPostsLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/members/${memberId}/posts?page=0&size=5`, {
       credentials: 'include',
@@ -58,6 +46,7 @@ export default function MyPage() {
     <div style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 32 }}>
       <MemberProfile
         member={{
+          member_id: member.member_id ?? 0,
           profile_image_url: member.profile_image_url ?? null,
           username: member.username ?? '',
           real_name: member.real_name ?? null,
@@ -66,7 +55,6 @@ export default function MyPage() {
           following_count: member.following_count ?? 0,
         }}
       />
-      {/* 내 게시물 썸네일 리스트 */}
       <div style={{ marginTop: 36 }}>
         <div style={{ fontWeight: 700, fontSize: 18, color: '#222', marginBottom: 12 }}>내 게시물</div>
         {postsLoading ? (
@@ -84,4 +72,5 @@ export default function MyPage() {
       </div>
     </div>
   );
-} 
+}
+ 

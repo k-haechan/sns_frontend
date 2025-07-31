@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { components } from "@/schema";
 import { useAuthStore } from '../../../store/useAuthStore'
+import { useRouter } from "next/navigation";
 
 type PostResponse = components["schemas"]["PostResponse"];
 
@@ -22,9 +23,10 @@ export default function PostDetailPage() {
 
   // 로그인한 사용자 정보 가져오기
   const { memberId } = useAuthStore();
+  const router = useRouter();
 
   // 현재 로그인한 사용자가 게시물 작성자인지 확인
-  const isAuthor = memberId !== null && post?.author?.member_id === memberId;
+  const isMyPost = post?.author?.member_id && memberId && post.author.member_id === memberId;
 
   const handleEditClick = () => {
     setEditTitle(post?.title || "");
@@ -64,6 +66,32 @@ export default function PostDetailPage() {
       setEditError("알 수 없는 오류가 발생했습니다.");
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  // TODO: API에서 게시물 작성자 정보를 받아와서 실제 비교 로직 구현
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 이 게시물을 삭제하시겠습니까?")) return;
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/${postId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setDeleteError(data.message || "삭제 실패");
+        setDeleteLoading(false);
+        return;
+      }
+      router.push("/members/me");
+    } catch {
+      setDeleteError("알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -165,24 +193,15 @@ export default function PostDetailPage() {
       </div>
 
       {/* 수정 버튼 - 작성자만 볼 수 있음 */}
-      {isAuthor && (
-        <button 
-          onClick={handleEditClick} 
-          style={{
-            marginBottom: 24, 
-            padding: '8px 16px', 
-            borderRadius: 6, 
-            border: '1px solid #0070f3', 
-            background: '#0070f3', 
-            color: '#fff',
-            cursor: 'pointer', 
-            fontWeight: 500,
-            fontSize: 14
-          }}
-        >
-          게시물 수정
-        </button>
+      {isMyPost && (
+        <div style={{display:'flex', gap:8, marginBottom:24}}>
+          <button onClick={handleEditClick} style={{padding: '8px 16px', borderRadius: 6, border: '1px solid #aaa', background: '#f7f7f7', cursor: 'pointer', fontWeight: 500, color: '#222'}}>게시물 수정</button>
+          <button onClick={handleDelete} disabled={deleteLoading} style={{padding: '8px 16px', borderRadius: 6, border: '1px solid #e00', background: '#fff0f0', color: '#e00', cursor: 'pointer', fontWeight: 500}}>
+            {deleteLoading ? '삭제 중...' : '게시물 삭제'}
+          </button>
+        </div>
       )}
+      {deleteError && <div style={{color:'red', marginBottom:12}}>{deleteError}</div>}
 
       {post.images && post.images.length > 0 && (
         <div style={{ marginBottom: 24, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>

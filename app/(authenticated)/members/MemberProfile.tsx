@@ -1,7 +1,11 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import FollowListModal from './FollowListModal';
 
 type MemberProfileProps = {
   member: {
+    member_id: number;
     profile_image_url?: string | null;
     username: string;
     real_name?: string | null;
@@ -13,6 +17,12 @@ type MemberProfileProps = {
 };
 
 export default function MemberProfile({ member, children }: MemberProfileProps) {
+  const [modalType, setModalType] = useState<'followers' | 'followings' | null>(null);
+
+  const handleCloseModal = () => {
+    setModalType(null);
+  };
+
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
@@ -33,16 +43,28 @@ export default function MemberProfile({ member, children }: MemberProfileProps) 
         </div>
       </div>
       <div style={{ display: 'flex', gap: 32, justifyContent: 'center', marginTop: 16 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.follower_count}</div>
+        <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setModalType('followers')}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>
+            {member.follower_count}
+          </div>
           <div style={{ color: '#888', fontSize: 14 }}>팔로워</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>{member.following_count}</div>
+        <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setModalType('followings')}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>
+            {member.following_count}
+          </div>
           <div style={{ color: '#888', fontSize: 14 }}>팔로잉</div>
         </div>
       </div>
       {children}
+
+      {modalType && (
+        <FollowListModal
+          memberId={member.member_id}
+          type={modalType}
+          onClose={handleCloseModal}
+        />
+      )}
     </>
   );
 } 

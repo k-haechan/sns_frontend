@@ -32,6 +32,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 회원 이름 검색
+         * @description 회원 이름으로 회원을 검색합니다.
+         */
+        get: operations["searchMemberByName"];
+        /**
+         * 회원 정보 수정
+         * @description 특정 회원의 정보를 수정합니다.
+         */
+        put: operations["updateMemberInfo"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/posts": {
         parameters: {
             query?: never;
@@ -67,6 +91,74 @@ export interface paths {
          */
         post: operations["join"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows/{follow-id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 팔로우 요청 거절
+         * @description 특정 팔로우 요청을 거절합니다.
+         */
+        post: operations["rejectFollowRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows/{follow-id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 팔로우 요청 수락
+         * @description 특정 팔로우 요청을 수락합니다.
+         */
+        post: operations["acceptFollowRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows/members/{member-id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 팔로우 관계 확인
+         * @description 특정 회원을 팔로잉 하고 있는지 확인합니다..
+         */
+        get: operations["getFollow"];
+        put?: never;
+        /**
+         * 팔로우 요청
+         * @description 특정 회원을 팔로우 요청합니다.
+         */
+        post: operations["requestFollow"];
+        /**
+         * 팔로우 취소
+         * @description 특정 회원과 팔로우를 취소합니다.
+         */
+        delete: operations["cancelFollow"];
         options?: never;
         head?: never;
         patch?: never;
@@ -176,26 +268,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/members": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 회원 이름 검색
-         * @description 회원 이름으로 회원을 검색합니다.
-         */
-        get: operations["searchMemberByName"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/members/{member_id}": {
         parameters: {
             query?: never;
@@ -228,6 +300,66 @@ export interface paths {
          * @description 특정 회원의 게시글을 조회합니다.
          */
         get: operations["getMemberPosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 팔로우 요청 조회
+         * @description 내 팔로우 요청을 조회합니다.
+         */
+        get: operations["findMyFollow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows/members/{member-id}/followings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 팔로잉 조회
+         * @description 특정 회원의 팔로잉을 조회합니다.
+         */
+        get: operations["getFollowings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows/members/{member-id}/followers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 팔로워 조회
+         * @description 특정 회원의 팔로워를 조회합니다.
+         */
+        get: operations["getFollowers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -290,6 +422,29 @@ export interface components {
             author?: components["schemas"]["MemberBriefResponse"];
             images?: components["schemas"]["ImageResponse"][];
         };
+        ModifyRequest: {
+            real_name?: string;
+            profile_image_url?: string;
+            introduction?: string;
+            is_secret?: boolean;
+        };
+        CustomResponseBodyMemberDetailResponse: {
+            message?: string;
+            data?: components["schemas"]["MemberDetailResponse"];
+        };
+        MemberDetailResponse: {
+            /** Format: int64 */
+            member_id?: number;
+            username?: string;
+            real_name?: string;
+            profile_image_url?: string;
+            introduction?: string;
+            /** Format: int64 */
+            follower_count?: number;
+            /** Format: int64 */
+            following_count?: number;
+            is_secret?: boolean;
+        };
         JoinRequest: {
             /**
              * @description 회원가입할 사용자의 username
@@ -315,6 +470,21 @@ export interface components {
         CustomResponseBodyVoid: {
             message?: string;
             data?: unknown;
+        };
+        CustomResponseBodyString: {
+            message?: string;
+            data?: string;
+        };
+        CustomResponseBodyFollowResponse: {
+            message?: string;
+            data?: components["schemas"]["FollowResponse"];
+        };
+        FollowResponse: {
+            /** Format: int64 */
+            follow_id?: number;
+            status?: string;
+            follower?: components["schemas"]["MemberBriefResponse"];
+            following?: components["schemas"]["MemberBriefResponse"];
         };
         ChatRoomRequest: {
             /** Format: int64 */
@@ -365,22 +535,6 @@ export interface components {
              */
             code: string;
         };
-        CustomResponseBodyMemberDetailResponse: {
-            message?: string;
-            data?: components["schemas"]["MemberDetailResponse"];
-        };
-        MemberDetailResponse: {
-            /** Format: int64 */
-            member_id?: number;
-            username?: string;
-            real_name?: string;
-            profile_image_url?: string;
-            introduction?: string;
-            /** Format: int64 */
-            follower_count?: number;
-            /** Format: int64 */
-            following_count?: number;
-        };
         Pageable: {
             /** Format: int32 */
             page?: number;
@@ -421,6 +575,24 @@ export interface components {
             empty?: boolean;
             sorted?: boolean;
             unsorted?: boolean;
+        };
+        CustomResponseBodySliceFollowResponse: {
+            message?: string;
+            data?: components["schemas"]["SliceFollowResponse"];
+        };
+        SliceFollowResponse: {
+            first?: boolean;
+            last?: boolean;
+            /** Format: int32 */
+            size?: number;
+            content?: components["schemas"]["FollowResponse"][];
+            /** Format: int32 */
+            number?: number;
+            sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
+            empty?: boolean;
         };
         CustomResponseBodySliceChatRoomResponse: {
             message?: string;
@@ -548,6 +720,52 @@ export interface operations {
             };
         };
     };
+    searchMemberByName: {
+        parameters: {
+            query: {
+                username: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyMemberBriefResponse"];
+                };
+            };
+        };
+    };
+    updateMemberInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModifyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyMemberDetailResponse"];
+                };
+            };
+        };
+    };
     generatePost: {
         parameters: {
             query?: never;
@@ -592,6 +810,114 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CustomResponseBodyVoid"];
+                };
+            };
+        };
+    };
+    rejectFollowRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "follow-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyString"];
+                };
+            };
+        };
+    };
+    acceptFollowRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "follow-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyFollowResponse"];
+                };
+            };
+        };
+    };
+    getFollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "member-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyString"];
+                };
+            };
+        };
+    };
+    requestFollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                "member-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyFollowResponse"];
+                };
+            };
+        };
+    };
+    cancelFollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyString"];
                 };
             };
         };
@@ -734,28 +1060,6 @@ export interface operations {
             };
         };
     };
-    searchMemberByName: {
-        parameters: {
-            query: {
-                username: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CustomResponseBodyMemberBriefResponse"];
-                };
-            };
-        };
-    };
     getMemberInfo: {
         parameters: {
             query?: never;
@@ -799,6 +1103,76 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CustomResponseBodySlicePostResponse"];
+                };
+            };
+        };
+    };
+    findMyFollow: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodySliceFollowResponse"];
+                };
+            };
+        };
+    };
+    getFollowings: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path: {
+                "member-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodySliceFollowResponse"];
+                };
+            };
+        };
+    };
+    getFollowers: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path: {
+                "member-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodySliceFollowResponse"];
                 };
             };
         };
