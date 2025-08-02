@@ -240,9 +240,13 @@ export default function PostDetailPage() {
       )}
       {deleteError && <div style={{color:'red', marginBottom:12}}>{deleteError}</div>}
 
-      {post.images && post.images.length > 1 && (
+      {post.images && post.images.length > 0 && (
         <div style={{ marginBottom: 24, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <button onClick={() => setCurrentImage((prev) => (prev === 0 ? (post.images?.length ?? 1) - 1 : prev - 1))} style={{ position: "absolute", left: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }} aria-label="이전 이미지" disabled={post.images?.length === 1}>◀</button>
+          {post.images.length > 1 && (
+            <button onClick={() => setCurrentImage((prev) => (prev === 0 ? (post.images?.length ?? 1) - 1 : prev - 1))} style={{ position: "absolute", left: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }} aria-label="이전 이미지">
+              ◀
+            </button>
+          )}
           <div style={{ width: 600, height: 400, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
             {post.images?.[currentImage]?.url ? (
               <>
@@ -253,8 +257,16 @@ export default function PostDetailPage() {
               <div style={{width:600, height:400, display:'flex', alignItems:'center', justifyContent:'center', background:'#eee', color:'#888'}}>이미지 없음</div>
             )}
           </div>
-          <button onClick={() => setCurrentImage((prev) => (prev === (post.images?.length ?? 1) - 1 ? 0 : prev + 1))} style={{ position: "absolute", right: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }} aria-label="다음 이미지" disabled={post.images?.length === 1}>▶</button>
-          <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontSize: 14, color: "#666" }}>{currentImage + 1} / {post.images?.length}</div>
+          {post.images.length > 1 && (
+            <button onClick={() => setCurrentImage((prev) => (prev === (post.images?.length ?? 1) - 1 ? 0 : prev + 1))} style={{ position: "absolute", right: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }} aria-label="다음 이미지">
+              ▶
+            </button>
+          )}
+          {post.images.length > 1 && (
+            <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontSize: 14, color: "#666" }}>
+              {currentImage + 1} / {post.images.length}
+            </div>
+          )}
         </div>
       )}
 
