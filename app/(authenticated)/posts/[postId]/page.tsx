@@ -240,7 +240,7 @@ export default function PostDetailPage() {
       )}
       {deleteError && <div style={{color:'red', marginBottom:12}}>{deleteError}</div>}
 
-      {post.images && post.images.length > 0 && (
+      {post.images && post.images.length > 1 && (
         <div style={{ marginBottom: 24, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <button onClick={() => setCurrentImage((prev) => (prev === 0 ? (post.images?.length ?? 1) - 1 : prev - 1))} style={{ position: "absolute", left: 0, zIndex: 2, background: "rgba(255,255,255,0.7)", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 20 }} aria-label="이전 이미지" disabled={post.images?.length === 1}>◀</button>
           <div style={{ width: 600, height: 400, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
@@ -298,11 +298,11 @@ export default function PostDetailPage() {
                     defaultValue={comment.content}
                     onChange={(e) => setEditingComment({...editingComment, content: e.target.value})}
                     rows={3}
-                    style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc', marginBottom: 8 }}
+                    style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc', marginBottom: 8, color: '#222' }}
                   />
                   <div style={{ textAlign: 'right' }}>
-                    <button onClick={() => editingComment && editingComment.content && handleCommentUpdate(comment.id!, editingComment.content)} style={{ marginRight: 8 }}>저장</button>
-                    <button onClick={() => setEditingComment(null)}>취소</button>
+                    <button onClick={() => editingComment && editingComment.content && handleCommentUpdate(comment.id!, editingComment.content)} style={{ marginRight: 8, color: '#0070f3', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none' }}>저장</button>
+                    <button onClick={() => setEditingComment(null)} style={{ color: '#555', cursor: 'pointer', background: 'none', border: 'none' }}>취소</button>
                   </div>
                 </div>
               ) : (

@@ -27,7 +27,7 @@ function MemberSearchList({ results }: { results: MemberBriefResponse[] }) {
       const data: components["schemas"]["CustomResponseBodyChatRoomResponse"] = await res.json();
       if (res.ok && data.data && data.data.chat_room_id) {
         const membersParam = encodeURIComponent(JSON.stringify(data.data.members || []));
-        router.push(`/chat/chatRoom/${data.data.chat_room_id}?members=${membersParam}`);
+        router.push(`/chat-rooms/${data.data.chat_room_id}?members=${membersParam}`);
       } else {
         alert(data.message || '채팅방 생성에 실패했습니다.');
       }

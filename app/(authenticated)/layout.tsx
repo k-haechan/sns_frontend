@@ -94,7 +94,7 @@ export default function AuthenticatedLayout({
             <FaSearch size={20} />
             {!isCollapsed && <span>Search</span>}
           </Link>
-          <Link href="/chat" style={{ 
+          <Link href="/chat-rooms" style={{ 
             fontWeight: 700, 
             fontSize: 16, 
             color: "#222", 
@@ -126,7 +126,7 @@ export default function AuthenticatedLayout({
             <FaBell size={20} />
             {!isCollapsed && <span>Notifications</span>}
           </Link>
-          <Link href="/post" style={{ 
+          <Link href="/posts" style={{ 
             fontWeight: 700, 
             fontSize: 16, 
             color: "#222", 

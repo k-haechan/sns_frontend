@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { useAuthStore } from '../../../../store/useAuthStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { components } from "@/schema";
 
 type ChatMessage = components["schemas"]["ChatResponse"];

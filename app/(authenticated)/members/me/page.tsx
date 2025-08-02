@@ -66,7 +66,7 @@ export default function MyPage() {
               title: post.title ?? '',
               images: post.images ?? [],
             }))}
-            onPostClick={post => router.push(`/post/${post.post_id}`)}
+            onPostClick={post => router.push(`/posts/${post.post_id}`)}
           />
         )}
       </div>

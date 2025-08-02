@@ -51,9 +51,7 @@ export default function ImageUploadTestPage() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [results, setResults] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
 
@@ -110,8 +108,6 @@ export default function ImageUploadTestPage() {
 
   const handleCreateAndUpload = async () => {
     setError(null);
-    setResults([]);
-    setSuccess(null);
     if (!title || !content || files.length === 0) {
       setError('제목, 내용, 이미지를 모두 입력하세요.');
       return;
@@ -135,7 +131,7 @@ export default function ImageUploadTestPage() {
         setUploading(false);
         return;
       }
-      const postId = createData.data.post_id; // <-- Add this line
+      const postId = createData.data.post_id;
       const presignedUrls = createData.data.images?.map((img: components["schemas"]["ImageResponse"]) => img.url);
       if (!presignedUrls || presignedUrls.length !== files.length) {
         setError('presignedUrl 개수 불일치 또는 응답 오류');
@@ -143,26 +139,12 @@ export default function ImageUploadTestPage() {
         return;
       }
       // 2. presignedUrl로 이미지 업로드
-      const uploadResults: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        try {
-          const webpBlob = await convertToWebp(files[i]);
-          const webpFile = new File([webpBlob], `${i}.webp`, { type: 'image/webp' });
-          await uploadImage(webpFile, presignedUrls[i]!);
-          uploadResults.push(presignedUrls[i]!.split('?')[0]);
-        } catch {
-          uploadResults.push('업로드 실패');
-        }
+        const webpBlob = await convertToWebp(files[i]);
+        const webpFile = new File([webpBlob], `${i}.webp`, { type: 'image/webp' });
+        await uploadImage(webpFile, presignedUrls[i]!);
       }
-      setResults(uploadResults);
-      setSuccess('게시물 생성 및 이미지 업로드가 완료되었습니다!');
-      setTitle('');
-      setContent('');
-      setFiles([]);
-      setFileInputKey(k => k + 1);
-
-      // Redirect to post detail page
-      router.push(`/post/${postId}`);
+      router.push(`/posts/${postId}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message || '오류 발생');
@@ -246,23 +228,6 @@ export default function ImageUploadTestPage() {
         </button>
       </div>
       {error && <div style={{ color: '#b00020', marginBottom: 10, fontWeight: 600 }}>{error}</div>}
-      {success && <div style={{ color: '#0070f3', marginBottom: 10, fontWeight: 600 }}>{success}</div>}
-      {results.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <h4 style={{ color: '#222', fontWeight: 700 }}>업로드 결과</h4>
-          <ul style={{ padding: 0, listStyle: 'none' }}>
-            {results.map((url, idx) => (
-              <li key={idx} style={{ marginBottom: 8 }}>
-                {url.startsWith('http') ? (
-                  <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 500 }}>{url}</a>
-                ) : (
-                  <span style={{ color: '#b00020', fontWeight: 600 }}>{url}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 } 

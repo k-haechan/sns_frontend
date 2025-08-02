@@ -2,7 +2,7 @@
 import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface Member {
   member_id: number;
@@ -98,7 +98,7 @@ export default function ChatRoomListPage() {
               className="flex items-center gap-4 p-4 mb-2 bg-white rounded-lg shadow cursor-pointer hover:bg-blue-50"
               onClick={() => {
                 const membersParam = encodeURIComponent(JSON.stringify(room.members));
-                router.push(`/chat/chatRoom/${room.chat_room_id}?members=${membersParam}`);
+                router.push(`/chat-rooms/${room.chat_room_id}?members=${membersParam}`);
               }}
             >
               <Image
