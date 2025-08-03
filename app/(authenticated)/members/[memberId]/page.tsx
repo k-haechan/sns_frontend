@@ -53,16 +53,30 @@ export default function MemberDetailPage() {
   useEffect(() => {
     if (!memberId || isMyPage) return;
     setCheckingFollow(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/one?following-id=${memberId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/members/${memberId}`, {
       credentials: 'include',
     })
       .then(res => res.json())
-      .then((data: components["schemas"]["CustomResponseBodyFollowResponse"]) => {
-        if (data.data) {
-          setFollowStatus(data.data.status || null);
-          setPendingFollowId(data.data.follow_id || null);
+      .then((data: components["schemas"]["CustomResponseBodyString"]) => {
+        const status = data.data || null;
+        setFollowStatus(status);
+        if (status === 'REQUESTED') {
+          // REQUESTED 상태일 경우에만 follow_id를 가져오기 위해 /one API 호출
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/one?following-id=${memberId}`, {
+            credentials: 'include',
+          })
+            .then(res => res.json())
+            .then((oneData: components["schemas"]["CustomResponseBodyFollowResponse"]) => {
+              if (oneData.data) {
+                setPendingFollowId(oneData.data.follow_id || null);
+              } else {
+                setPendingFollowId(null);
+              }
+            })
+            .catch(() => {
+              setPendingFollowId(null);
+            });
         } else {
-          setFollowStatus(null);
           setPendingFollowId(null);
         }
       })
