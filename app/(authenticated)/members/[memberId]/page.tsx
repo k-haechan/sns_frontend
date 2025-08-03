@@ -24,6 +24,7 @@ export default function MemberDetailPage() {
   const [followStatus, setFollowStatus] = useState<string | null>(null);
   const [checkingFollow, setCheckingFollow] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
+  const [pendingFollowId, setPendingFollowId] = useState<number | null>(null);
 
   const isMyPage = myId && String(myId) === String(memberId);
 
@@ -52,15 +53,22 @@ export default function MemberDetailPage() {
   useEffect(() => {
     if (!memberId || isMyPage) return;
     setCheckingFollow(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/members/${memberId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/one?following-id=${memberId}`, {
       credentials: 'include',
     })
       .then(res => res.json())
-      .then((data: components["schemas"]["CustomResponseBodyString"]) => {
-        setFollowStatus(data.data || null);
+      .then((data: components["schemas"]["CustomResponseBodyFollowResponse"]) => {
+        if (data.data) {
+          setFollowStatus(data.data.status || null);
+          setPendingFollowId(data.data.follow_id || null);
+        } else {
+          setFollowStatus(null);
+          setPendingFollowId(null);
+        }
       })
       .catch(() => {
         setFollowStatus(null);
+        setPendingFollowId(null);
       })
       .finally(() => setCheckingFollow(false));
   }, [memberId, isMyPage]);
@@ -86,10 +94,13 @@ export default function MemberDetailPage() {
       if (responseData.data?.status === 'ACCEPTED') {
         setFollowStatus('ACCEPTED');
         setFollowerCount(prev => prev + 1);
+        setPendingFollowId(responseData.data.follow_id || null);
       } else if (responseData.data?.status === 'REQUESTED') {
         setFollowStatus('REQUESTED');
+        setPendingFollowId(responseData.data.follow_id || null);
       } else {
         setFollowStatus('NONE');
+        setPendingFollowId(null);
       }
     } catch {
       setFollowError('알 수 없는 오류가 발생했습니다.');
@@ -114,9 +125,38 @@ export default function MemberDetailPage() {
       }
       setFollowStatus('NONE');
       setFollowerCount(prev => Math.max(0, prev - 1));
+      setPendingFollowId(null);
     } catch (error) {
       if (error instanceof Error) {
         setFollowError(`언팔로우 중 오류 발생: ${error.message}`);
+      } else {
+        setFollowError('알 수 없는 오류가 발생했습니다.');
+      }
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleCancelFollowRequest = async () => {
+    if (!pendingFollowId) return;
+    setFollowLoading(true);
+    setFollowError(null);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${pendingFollowId}/cancel`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setFollowError(data.message || '팔로우 요청 취소 실패');
+        setFollowLoading(false);
+        return;
+      }
+      setFollowStatus('NONE');
+      setPendingFollowId(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        setFollowError(`팔로우 요청 취소 중 오류 발생: ${error.message}`);
       } else {
         setFollowError('알 수 없는 오류가 발생했습니다.');
       }
@@ -129,13 +169,10 @@ export default function MemberDetailPage() {
     if (checkingFollow) return '확인 중...';
     if (followLoading) return '요청 중...';
     if (followStatus === 'ACCEPTED') return '언팔로우';
-    if (followStatus === 'REQUESTED') return '팔로우 요청 중';
+    if (followStatus === 'REQUESTED') return '팔로우 요청 취소';
     if (followStatus === 'NONE') return '팔로우 요청';
     return '팔로우 요청';
   };
-
-  const isFollowing = followStatus === 'ACCEPTED';
-  const isPending = followStatus === 'REQUESTED';
 
   const handleChat = async () => {
     setChatLoading(true);
@@ -181,11 +218,17 @@ export default function MemberDetailPage() {
         {!isMyPage && (
           <div style={{ marginTop: 32, textAlign: 'center' }}>
             <button
-              onClick={isFollowing ? handleUnfollow : handleFollow}
+              onClick={
+                followStatus === 'ACCEPTED'
+                  ? handleUnfollow
+                  : followStatus === 'REQUESTED'
+                  ? handleCancelFollowRequest
+                  : handleFollow
+              }
               style={{ 
                 padding: '12px 32px', 
-                background: isFollowing ? '#e00' : '#fff', 
-                color: isFollowing ? '#fff' : '#0070f3', 
+                background: followStatus === 'ACCEPTED' ? '#e00' : '#fff', 
+                color: followStatus === 'ACCEPTED' ? '#fff' : '#0070f3', 
                 border: '1px solid #0070f3', 
                 borderRadius: 8, 
                 fontWeight: 700, 
@@ -194,7 +237,7 @@ export default function MemberDetailPage() {
                 opacity: (followLoading || checkingFollow) ? 0.6 : 1, 
                 marginRight: 12 
               }}
-              disabled={followLoading || checkingFollow || isPending}
+              disabled={followLoading || checkingFollow}
             >
               {getFollowButtonText()}
             </button>

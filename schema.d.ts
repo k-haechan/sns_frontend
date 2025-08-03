@@ -164,6 +164,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/follows/{follow-id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 팔로우 요청 취소
+         * @description 특정 팔로우 요청을 취소합니다.
+         */
+        post: operations["cancelFollowRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/follows/{follow-id}/accept": {
         parameters: {
             query?: never;
@@ -316,6 +336,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["unsubscribe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["subscribe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/members/{member_id}": {
         parameters: {
             query?: never;
@@ -368,6 +436,26 @@ export interface paths {
          * @description 내 팔로우 요청을 조회합니다.
          */
         get: operations["findMyFollow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/follows/one": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 팔로우 요청 단건 조회
+         * @description 내 팔로우 요청을 조회합니다.
+         */
+        get: operations["findMyFollowRequest"];
         put?: never;
         post?: never;
         delete?: never;
@@ -619,12 +707,12 @@ export interface components {
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
         };
         SliceCommentResponse: {
             first?: boolean;
@@ -635,15 +723,48 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         SortObject: {
             empty?: boolean;
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
+        };
+        CustomResponseBodySliceNotificationResponse: {
+            message?: string;
+            data?: components["schemas"]["SliceNotificationResponse"];
+        };
+        NotificationResponse: {
+            /** Format: int64 */
+            notification_id?: number;
+            type?: string;
+            /** Format: int64 */
+            sub_id?: number;
+            message?: string;
+            is_read?: boolean;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        SliceNotificationResponse: {
+            first?: boolean;
+            last?: boolean;
+            /** Format: int32 */
+            size?: number;
+            content?: components["schemas"]["NotificationResponse"][];
+            /** Format: int32 */
+            number?: number;
+            sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
+            empty?: boolean;
+        };
+        SseEmitter: {
+            /** Format: int64 */
+            timeout?: number;
         };
         CustomResponseBodySlicePostResponse: {
             message?: string;
@@ -658,9 +779,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         CustomResponseBodySliceFollowResponse: {
@@ -676,9 +797,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         CustomResponseBodySliceChatRoomResponse: {
@@ -694,9 +815,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         ChatResponse: {
@@ -723,9 +844,9 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
     };
@@ -1001,6 +1122,30 @@ export interface operations {
     };
     rejectFollowRequest: {
         parameters: {
+            query: {
+                "notification-id": number;
+            };
+            header?: never;
+            path: {
+                "follow-id": number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyString"];
+                };
+            };
+        };
+    };
+    cancelFollowRequest: {
+        parameters: {
             query?: never;
             header?: never;
             path: {
@@ -1023,7 +1168,9 @@ export interface operations {
     };
     acceptFollowRequest: {
         parameters: {
-            query?: never;
+            query: {
+                "notification-id": number;
+            };
             header?: never;
             path: {
                 "follow-id": number;
@@ -1247,6 +1394,71 @@ export interface operations {
             };
         };
     };
+    getNotifications: {
+        parameters: {
+            query: {
+                "last-notification-id"?: number;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodySliceNotificationResponse"];
+                };
+            };
+        };
+    };
+    unsubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    subscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SseEmitter"];
+                };
+            };
+        };
+    };
     getMemberInfo: {
         parameters: {
             query?: never;
@@ -1312,6 +1524,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CustomResponseBodySliceFollowResponse"];
+                };
+            };
+        };
+    };
+    findMyFollowRequest: {
+        parameters: {
+            query: {
+                "following-id": number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomResponseBodyFollowResponse"];
                 };
             };
         };

@@ -1,10 +1,14 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { useAuthStore } from "../store/useAuthStore";
-import { FaHome, FaSearch, FaComments, FaBell, FaUser, FaEdit } from 'react-icons/fa';
-
+import { FaHome, FaSearch, FaComments, FaUser, FaEdit } from 'react-icons/fa';
 import { useState, useEffect } from "react";
+import NotificationIcon from "./notifications/NotificationIcon";
+import { useNotificationStore } from "../store/useNotificationStore";
+import { components } from "@/schema";
+
+type Notification = components["schemas"]["NotificationResponse"];
 
 export default function AuthenticatedLayout({
   children,
@@ -12,20 +16,43 @@ export default function AuthenticatedLayout({
   children: React.ReactNode
 }) {
   const { memberId, resetAuth, _hasHydrated } = useAuthStore();
+  const { addNotification, hasUnreadNotifications } = useNotificationStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       setIsCollapsed(window.innerWidth <= 768);
     };
-
-    // 초기 설정
     handleResize();
-
-    // 리사이즈 이벤트 리스너
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!_hasHydrated || !memberId) return;
+
+    const eventSource = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/notifications/subscribe`,
+      { withCredentials: true }
+    );
+
+    eventSource.onmessage = (event) => {
+      if (event.data.startsWith("EventStream Created.")) {
+        return;
+      }
+      const newNotification = JSON.parse(event.data) as Notification;
+      addNotification(newNotification);
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("EventSource failed:", error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [_hasHydrated, memberId, addNotification]);
 
   const handleLogout = async () => {
     try {
@@ -121,9 +148,14 @@ export default function AuthenticatedLayout({
             gap: isCollapsed ? 0 : 12,
             borderRadius: 8,
             transition: "background 0.2s",
+            cursor: "pointer",
             justifyContent: isCollapsed ? "center" : "flex-start"
-          }} onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f5"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-            <FaBell size={20} />
+          }} 
+          onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f5"} 
+          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+          onClick={() => useNotificationStore.getState().markNotificationsAsRead()}
+          >
+            <NotificationIcon hasUnreadNotifications={hasUnreadNotifications} />
             {!isCollapsed && <span>Notifications</span>}
           </Link>
           <Link href="/posts" style={{ 
@@ -207,7 +239,10 @@ export default function AuthenticatedLayout({
           </div>
         )}
       </nav>
-      <div style={{ marginLeft: contentMargin, minHeight: "100vh", transition: "margin-left 0.3s ease" }}>{children}</div>
+      <div style={{ marginLeft: contentMargin, minHeight: "100vh", transition: "margin-left 0.3s ease" }}>
+        {children}
+      </div>
     </>
   );
-} 
+}
+ 

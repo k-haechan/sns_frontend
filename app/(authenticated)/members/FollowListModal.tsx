@@ -17,21 +17,36 @@ export default function FollowListModal({ memberId, type, onClose }: FollowListM
   const router = useRouter();
   const [list, setList] = useState<MemberBrief[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const title = type === 'followers' ? '팔로워' : '팔로잉';
 
   useEffect(() => {
     setLoading(true);
+    setErrorMessage(null); // Reset error message on new fetch
     const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/members/${memberId}/${type}?page=0&size=10`;
     fetch(url, { credentials: 'include' })
-      .then(res => res.json())
+      .then(async res => {
+        if (res.status === 403) {
+          setErrorMessage("접근 권한이 없습니다: 비공개 계정입니다.");
+          return null; // Prevent further processing
+        } else if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        if (type === 'followers') {
-          setList(data.data?.content?.map((follow: components["schemas"]["FollowResponse"]) => follow.following) || []);
-        } else {
-          setList(data.data?.content?.map((follow: components["schemas"]["FollowResponse"]) => follow.follower) || []);
+        if (data) { // Only process data if it's not null (i.e., not a 403 error)
+          if (type === 'followers') {
+            setList(data.data?.content?.map((follow: components["schemas"]["FollowResponse"]) => follow.following) || []);
+          } else {
+            setList(data.data?.content?.map((follow: components["schemas"]["FollowResponse"]) => follow.follower) || []);
+          }
         }
       })
-      .catch(error => console.error(`${title} 목록 조회 실패:`, error))
+      .catch(error => {
+        console.error(`${title} 목록 조회 실패:`, error);
+        setErrorMessage(`데이터를 불러오는 데 실패했습니다: ${error.message}`);
+      })
       .finally(() => setLoading(false));
   }, [memberId, type, title]);
 
@@ -46,6 +61,8 @@ export default function FollowListModal({ memberId, type, onClose }: FollowListM
         <h2 style={{marginBottom:16, color:'#222'}}>{title}</h2>
         {loading ? (
           <div style={{textAlign:'center', padding:20}}>로딩 중...</div>
+        ) : errorMessage ? (
+          <div style={{textAlign:'center', padding:20, color:'red'}}>{errorMessage}</div>
         ) : list.length > 0 ? (
           <div>
             {list.map((item) => (
